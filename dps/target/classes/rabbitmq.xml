@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd  
+    http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.4.xsd  http://www.springframework.org/schema/task  
+    http://www.springframework.org/schema/task/spring-task-4.1.xsd">
+
+
+	<!-- durable 是否持久化 exclusive 仅创建者可以使用的私有队列，断开后自动删除 auto-delete 当所有消费端连接断开后，是否自动删除队列 -->
+
+	<rabbit:queue id="TT212" durable="true" auto-delete="false"
+		exclusive="false" name="TT212">
+		<rabbit:queue-arguments>
+			<entry key="x-message-ttl">
+				<value type="java.lang.Long">60000</value>
+			</entry>
+		</rabbit:queue-arguments>
+	</rabbit:queue>
+
+
+	<rabbit:queue id="TC212" durable="true" auto-delete="false"
+		name="TC212" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="TCC" durable="true" auto-delete="false"
+		name="TCC" exclusive="false">
+	</rabbit:queue>
+
+
+
+	<rabbit:queue name="StationCfg_cgs" durable="true"></rabbit:queue>
+	<rabbit:queue name="StationCfg_aas" durable="true"></rabbit:queue>
+	<rabbit:queue name="StationCfg_dps" durable="true"></rabbit:queue>
+	<rabbit:queue name="StationCfg_dss" durable="true"></rabbit:queue>
+	<!-- 该处把需要数据的队列与路由绑定一起，如果手动在控制台绑定就不需要此代码 -->
+	<rabbit:fanout-exchange name="StationCfg"
+		xmlns="http://www.springframework.org/schema/rabbit" durable="true">
+		<rabbit:bindings>
+			<rabbit:binding queue="StationCfg_cgs"></rabbit:binding>
+			<rabbit:binding queue="StationCfg_dps"></rabbit:binding>
+			<rabbit:binding queue="StationCfg_dss"></rabbit:binding>
+			<rabbit:binding queue="StationCfg_aas"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+	<rabbit:queue name="TLatest" durable="true"></rabbit:queue>
+	<rabbit:queue name="T2011" durable="true"></rabbit:queue>
+	<rabbit:queue name="T2031" durable="true"></rabbit:queue>
+	<rabbit:queue name="T2051" durable="true"></rabbit:queue>
+	<rabbit:queue name="T2061" durable="true"></rabbit:queue>
+	<rabbit:queue name="TM212" durable="true"></rabbit:queue>
+	<!-- 该处把需要数据的队列与路由绑定一起，如果手动在控制台绑定就不需要此代码 -->
+	<rabbit:fanout-exchange name="ET2011"
+		xmlns="http://www.springframework.org/schema/rabbit" durable="true">
+		<rabbit:bindings>
+			<rabbit:binding queue="T2011"></rabbit:binding>
+			<rabbit:binding queue="TM212"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+	<!-- 该处把需要数据的队列与路由绑定一起，如果手动在控制台绑定就不需要此代码 -->
+	<rabbit:fanout-exchange name="ET2051"
+		xmlns="http://www.springframework.org/schema/rabbit" durable="true">
+		<rabbit:bindings>
+			<rabbit:binding queue="T2051"></rabbit:binding>
+			<rabbit:binding queue="TM212"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+	<!-- 该处把需要数据的队列与路由绑定一起，如果手动在控制台绑定就不需要此代码 -->
+	<rabbit:fanout-exchange name="ET2061"
+		xmlns="http://www.springframework.org/schema/rabbit" durable="true">
+		<rabbit:bindings>
+			<rabbit:binding queue="T2061"></rabbit:binding>
+			<rabbit:binding queue="TM212"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+	<!-- 该处把需要数据的队列与路由绑定一起，如果手动在控制台绑定就不需要此代码 -->
+	<rabbit:fanout-exchange name="ET2031"
+		xmlns="http://www.springframework.org/schema/rabbit" durable="true">
+		<rabbit:bindings>
+			<rabbit:binding queue="T2031"></rabbit:binding>
+			<rabbit:binding queue="TM212"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+	<rabbit:queue id="ParamRule" durable="true" auto-delete="false"
+		name="ParamRule" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="TE212" durable="true" auto-delete="false"
+		name="TE212" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="Logs" durable="true" auto-delete="false"
+		name="Logs" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="Report" durable="true" auto-delete="false"
+		name="Report" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="Alarm" durable="true" auto-delete="false"
+		name="Alarm" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="AlarmRule" durable="true" auto-delete="false"
+		name="AlarmRule" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="AlarmFail" durable="true" auto-delete="false"
+		name="AlarmFail" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="T212Cycle" durable="true" auto-delete="false"
+		name="T212Cycle" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="NoticeRule" durable="true" auto-delete="false"
+		name="NoticeRule" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="Notice" durable="true" auto-delete="false"
+		name="Notice" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="NoticeFail" durable="true" auto-delete="false"
+		name="NoticeFail" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="Control" durable="true" auto-delete="false"
+		name="Control" exclusive="false">
+	</rabbit:queue>
+
+	<rabbit:queue id="AuditRule" durable="true" auto-delete="false"
+		name="AuditRule" exclusive="false">
+	</rabbit:queue>
+
+
+</beans>  

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dss.dao.QueryDataDao">
+
+	<select id="queryDataByCondition" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		SELECT
+		D.`POINTCODE` AS pointCode,
+		D.`POLLUTECODE` AS polluteCode,
+		`DATATIME` AS dataTime,
+		`DATAVALUE` AS dataValue,
+		`ISVALIDED` AS isValided,
+		`MAXVALUE` AS `maxValue`,
+  		`MINVALUE` AS `minValue`,
+		`DATAFLAG` AS dataFlag,
+		 AUDITVALUE as auditValue,
+		 DATASTATUS as dataStatus,
+		 P.ISAUDIT AS isAudit,
+		 P.NUMPRECISION AS numPrecision,
+		 R.SYSTEMTYPE AS ST 
+		FROM ${tableName} AS D,T_DIC_STDPOLLCODE AS P ,T_DIC_SYSTYPE_POLLCODE_REL AS R
+		where D.POLLUTECODE = P.POLLUTECODE  AND P.CODECLASS = R.CODECLASS
+		AND R.SYSTEMTYPE='${systemType}'
+		<if test="pointCode!=null and pointCode!=''">
+			AND D.pointCode='${pointCode}'
+		</if>
+		<if test="beginTime!=null and beginTime!='' ">
+			AND DATATIME  &gt;='${beginTime}'
+		</if>
+		<if test="endTime!=null and endTime!=''">
+			AND DATATIME &lt; '${endTime}'
+		</if>
+		<if test="null != polluteCodes and polluteCodes.size > 0">
+			AND D.POLLUTECODE IN
+			<foreach collection="polluteCodes" index="index" item="code"
+				open="(" separator="," close=")">
+				'${code}'
+			</foreach>
+		</if>
+	</select>
+
+	<select id="queryYMDataByCondition" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		SELECT
+		D.`POINTCODE` AS pointCode,
+		D.`POLLUTECODE` AS polluteCode,
+		`DATATIME` AS dataTime,
+		`AVGVALUE` AS dataValue,
+		 `MAXVALUE` AS `maxValue`,
+  		`MINVALUE` AS `minValue`,
+		`ISVALIDED` AS isValided,
+		`DATAFLAG` AS dataFlag,
+		P.NUMPRECISION AS numPrecision,
+		R.SYSTEMTYPE AS ST
+		FROM ${tableName} D,T_DIC_STDPOLLCODE  P ,T_DIC_SYSTYPE_POLLCODE_REL R
+		where D.POLLUTECODE = P.POLLUTECODE  AND P.CODECLASS = R.CODECLASS
+		AND R.SYSTEMTYPE='${systemType}'
+		AND MONITORTYPE='${dataType}'
+		AND D.pointCode='${pointCode}'
+		<if test="beginTime!=null and beginTime!='' ">
+			AND DATATIME  &gt;='${beginTime}'
+		</if>
+		<if test="endTime!=null and endTime!=''">
+			AND DATATIME &lt; '${endTime}'
+		</if>
+		<if test="null != polluteCodes and polluteCodes.size > 0">
+			AND D.POLLUTECODE IN
+			<foreach collection="polluteCodes" index="index" item="code"
+				open="(" separator="," close=")">
+				'${code}'
+			</foreach>
+		</if>
+	</select>
+
+
+	<select id="queryRCDataByCondition" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		SELECT DISTINCT
+		DATATIME AS dataTime FROM
+		${tableName} AS R,
+		V_BAS_STATIONPOLLINFO AS P
+		WHERE R.POINTCODE = P.POINTCODE
+		AND R.POLLUTECODE = P.POLLUTECODE
+		AND P.POLLUTECLASS = 'PolluteClass44'
+		AND IFNULL(R.DATAVALUE, 0) &gt;= 1
+		AND R.pointCode='${pointCode}'
+		<if test="beginTime!=null and beginTime!='' ">
+			AND DATATIME  &gt;='${beginTime}'
+		</if>
+		<if test="endTime!=null and endTime!=''">
+			AND DATATIME &lt; '${endTime}'
+		</if>
+		order by DATATIME asc
+	</select>
+
+	<select id="queryPollute" resultType="com.zeei.das.dss.vo.PolluteVO">
+		SELECT DISTINCT 
+		  pollutecode,
+		  pollutename,
+		  numPrecision 
+		FROM
+		  T_DIC_STDPOLLCODE a,
+		  T_DIC_SYSTYPE_POLLCODE_REL b 
+		WHERE a.CODECLASS = b.CODECLASS 
+		  AND systemtype = 22 
+		  AND pollutecode IN (
+		    'a05024',
+		    'a21004',
+		    'a21005',
+		    'a21026',
+		    'a34002',
+		    'a34004',
+		    'a83006',
+		    'a83004',
+		    'a83005',
+		    'a83003',
+		    'a83002',
+		    'a83001'
+		  )
+	</select>
+
+	<select id="queryVPollute" resultType="String">
+		SELECT	POLLUTECODE	FROM  
+		T_DIC_STDPOLLCODE	WHERE POLLUTECLASS = 'PolluteClass99'
+	</select>
+	
+	<select id="queryValidPoll" resultType="com.zeei.das.dss.vo.SitePolluterVo">	
+            SELECT pointCode,
+		       polluteCode,
+		       max(hhcycletime) as hhcycletime,
+		       MAX(ISSTAT) AS ISSTAT
+		    FROM V_BAS_STATIONPOLLINFO
+		   group by pointCode, polluteCode
+	</select>
+	
+	<select id="queryDataTime" resultType="com.zeei.das.dss.vo.DataTimeVO">
+		SELECT DISTINCT
+		a.POINTCODE AS pointCode,
+		b.STDPOINTCODE AS MN,
+		DATATIME
+		AS dataTime,
+		MICYCLETIME AS mInterval,
+		RTCYCLETIME AS rInterval
+		FROM
+		${tableName} a,
+		T_PS_BAS_POINTLIST b
+		WHERE a.POINTCODE = b.POINTCODE
+		AND DATATIME BETWEEN '${beginTime}' AND  '${endTime}'
+	</select>
+
+	
+	<select id="queryAuditLog" resultType="com.zeei.das.dss.vo.AuditLogVO">
+		SELECT DISTINCT 
+		  pointcode,
+		  datatime 
+		FROM
+		  T_BAS_AUDITRECORD 
+		WHERE audittype IN (1, 3)
+		AND pointCode='${pointCode}'		
+		<if test="beginTime!=null and beginTime!='' ">
+			AND AUDITTIME  &gt;='${beginTime}'
+		</if>
+		<if test="endTime!=null and endTime!=''">
+			AND AUDITTIME &lt; '${endTime}'
+		</if>
+		order by datatime desc
+	</select>
+	
+	<select id="queryAuditData" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		SELECT 
+		  D.POINTCODE AS pointCode,		 
+		  DATATIME AS dataTime		 
+		FROM ${tableName} AS D,T_DIC_STDPOLLCODE AS P
+		where D.POLLUTECODE = P.POLLUTECODE
+		AND	(DATASTATUS=0 OR DATASTATUS is null)
+		AND ISAUDIT=1
+		AND D.pointCode='${pointCode}'
+		<if test="beginTime!=null and beginTime!='' ">
+			AND DATATIME  &gt;='${beginTime}'
+		</if>
+		<if test="endTime!=null and endTime!=''">
+			AND DATATIME &lt; '${endTime}'
+		</if>
+		order by datatime desc		
+	</select>
+	
+	<select id="queryMaxPollValue" resultType="com.zeei.das.dss.vo.PolluteVO">
+		SELECT 
+		  POLLUTECODE,
+		  SMAXVALUE,
+		  TTYPE AS polluteClass 
+		FROM
+		  T_DIC_POLLSTD A 
+		  LEFT JOIN T_DIC_POLLSTD_DETAIL B 
+		    ON A.SCODE = B.SCODE 
+		WHERE A.SYSTEMTYPE = '22' 
+		  AND A.SCODE = '106' 
+		  AND B.TTYPE IN ('timeType03', 'timeType04')
+	</select>
+	
+	<select id="queryAirHvyDays" resultType="com.zeei.das.dss.vo.AirHvyDayVo">	   
+	     SELECT  * FROM   T_ENV_MONI_AIR_HVYDAY_STAT  WHERE EDATETIME IS NULL
+	  </select>
+	
+	<select id="queryPollIncident" resultType="com.zeei.das.dss.vo.PollIncidentVo">	   
+	     SELECT  * FROM   T_ENV_MONI_AIR_OPREC  WHERE ETIME IS NULL
+	</select>
+	
+	<select id="queryNowHvys" resultType="com.zeei.das.dss.vo.AqiDataVO">
+	   
+	     SELECT  CODE, max(DATATIME)AS DATATIME ,`LEVEL`
+	     FROM
+            (SELECT  CODE,(CASE WHEN AQI&lt;=200 THEN DATATIME ELSE NULL END)AS DATATIME,`LEVEL` 
+             FROM  
+             T_ENV_MONI_AIR_AQIDD  WHERE 1=1 
+            <if test="beginTime!=null and beginTime!='' ">
+				AND DATATIME  &gt;='${beginTime}'
+			</if>
+			<if test="endTime!=null and endTime!=''">
+				AND DATATIME &lt;= '${endTime}'
+			</if>
+              AND  dataStatus = '0')A GROUP BY A.CODE,A.`LEVEL`
+	</select>
+
+</mapper>

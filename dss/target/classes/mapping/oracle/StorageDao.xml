@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dss.dao.StorageDao">
+
+	<insert id="insertData" statementType="STATEMENT">
+		merge into ${tableName} T
+	   using (
+		 select
+		 ${vo.pointCode} as pointCode, 
+		 '${vo.polluteCode}' as polluteCode,
+		 to_date('${vo.dataTime}','yyyy-mm-dd hh24:mi:ss') as dataTime,		
+		  <choose><when test="vo.dataValue!=null">${vo.dataValue}</when><otherwise>null</otherwise></choose> as dataValue,
+          <choose><when test="vo.maxValue!=null">${vo.maxValue}</when><otherwise>null</otherwise></choose> as maxValue,
+          <choose><when test="vo.minValue!=null">${vo.minValue}</when><otherwise>null</otherwise></choose> as minValue,
+          <choose><when test="vo.auditValue!=null">${vo.auditValue}</when><otherwise>null</otherwise></choose> as auditValue, 
+		 to_date('${vo.updateTime}','yyyy-mm-dd hh24:mi:ss') as updateTime,
+		 '${vo.dataFlag}' as dataFlag,
+		 '${vo.dataStatus}' as dataStatus,
+		 ${vo.isValided} as isValided
+		 from dual
+		 ) S ON  (T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE  and T.DATATIME=S.DATATIME)
+	   when matched then
+	   update set  T.UPDATETIME=S.UPDATETIME, T.MINVALUE=S.MINVALUE, 
+       T.MAXVALUE=S.MAXVALUE, T.DATAVALUE=S.DATAVALUE, 
+       T.DATAFLAG=S.DATAFLAG,T.AUDITVALUE=S.AUDITVALUE,
+       T.DATASTATUS=S.DATASTATUS,
+	   T.ISVALIDED=S.ISVALIDED
+	   when not matched then
+	   insert ( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  MAXVALUE,
+			  MINVALUE,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATAFLAG,
+			  DATASTATUS,
+			  ISVALIDED) values(S.POINTCODE,
+		  S.POLLUTECODE,
+		  S.DATATIME,
+		  S.DATAVALUE,
+		  S.MAXVALUE,
+		  S.MINVALUE,
+		  S.AUDITVALUE,
+		  S.UPDATETIME,
+		  S.DATAFLAG,
+		  S.DATASTATUS,
+		  S.ISVALIDED)
+	</insert>
+
+
+	<insert id="insertDataBatch" statementType="STATEMENT">			
+		merge into ${tableName}  T
+		   using (
+		   <foreach collection="list" item="item" index="index" separator="union all">
+			select 
+			 ${item.pointCode} as pointCode , 
+			 '${item.polluteCode}' as polluteCode,
+			  to_date('${item.dataTime}','yyyy-mm-dd hh24:mi:ss') as dataTime ,
+			  <choose><when test="item.dataValue!=null">${item.dataValue}</when><otherwise>null</otherwise></choose> as dataValue,
+             <choose><when test="item.maxValue!=null">${item.maxValue}</when><otherwise>null</otherwise></choose> as maxValue,
+             <choose><when test="item.minValue!=null">${item.minValue}</when><otherwise>null</otherwise></choose> as minValue,
+             <choose><when test="item.auditValue!=null">${item.auditValue}</when><otherwise>null</otherwise></choose> as auditValue, 
+			 to_date('${item.updateTime}','yyyy-mm-dd hh24:mi:ss') as updateTime,
+			 '${item.dataFlag}' as dataFlag,
+			 '${item.dataStatus}' as dataStatus ,
+			 ${item.isValided} as isValided
+			 from dual
+			</foreach>) S  ON  (T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE  and T.DATATIME=S.DATATIME)
+		   when matched then
+		   update set  T.UPDATETIME=S.UPDATETIME, T.MINVALUE=S.MINVALUE, 
+           T.MAXVALUE=S.MAXVALUE, T.DATAVALUE=S.DATAVALUE, 
+           T.DATAFLAG=S.DATAFLAG,T.AUDITVALUE=S.AUDITVALUE,
+           T.DATASTATUS=S.DATASTATUS,
+		   T.ISVALIDED=S.ISVALIDED
+		   when not matched then
+		   insert
+		   ( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  MAXVALUE,
+			  MINVALUE,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATAFLAG,
+			  DATASTATUS,
+			  ISVALIDED)
+		    values(S.POINTCODE,
+			  S.POLLUTECODE,
+			  S.DATATIME,
+			  S.DATAVALUE,
+			  S.MAXVALUE,
+			  S.MINVALUE,
+			  S.AUDITVALUE,
+			  S.UPDATETIME,
+			  S.DATAFLAG,
+			  S.DATASTATUS,
+			  S.ISVALIDED)
+		</insert>
+		
+		<insert id="insertYMDataByBatch" statementType="STATEMENT">
+			merge into ${tableName} T
+			   using (
+			   <foreach collection="list" item="item" index="index" separator="union all">
+		           select  
+		             ${item.pointCode} as pointCode,
+					 '${item.polluteCode}' as polluteCode,
+					 '${item.dataType}' as MONITORTYPE,
+					  to_date('${item.dataTime}','yyyy-mm-dd hh24:mi:ss') as dataTime,
+					  to_date('${item.updateTime}','yyyy-mm-dd hh24:mi:ss') as updateTime,
+					   <choose><when test="item.maxValue!=null">${item.maxValue}</when><otherwise>null</otherwise></choose> as maxValue,
+			           <choose><when test="item.minValue!=null">${item.minValue}</when><otherwise>null</otherwise></choose> as minValue,
+			           <choose><when test="item.dataValue!=null">${item.dataValue}</when><otherwise>null</otherwise></choose> as AVGVALUE,
+					  '${item.dataFlag}' as dataFlag
+					 from dual
+		       </foreach>
+			   ) S  ON  (T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE and T.MONITORTYPE=S.MONITORTYPE and T.DATATIME=S.DATATIME)
+			   when matched then
+			   update set T.UPDATETIME=S.UPDATETIME, T.MAXVALUE=S.MAXVALUE, 
+               T.MINVALUE=S.MINVALUE, T.AVGVALUE=S.AVGVALUE, 
+               T.DATAFLAG=S.DATAFLAG
+			   when not matched then
+			   insert (POINTCODE,
+					  POLLUTECODE,
+					  MONITORTYPE,
+					  DATATIME,
+					  UPDATETIME,
+					  MAXVALUE,
+					  MINVALUE,
+					  AVGVALUE,
+					  DATAFLAG) values(S.POINTCODE,
+					  S.POLLUTECODE,
+					  S.MONITORTYPE,
+					  S.DATATIME,
+					  S.UPDATETIME,
+					  S.MAXVALUE,
+					  S.MINVALUE,
+					  S.AVGVALUE,
+					  S.DATAFLAG)	  
+	</insert>
+	
+	<insert id="insertYMData" statementType="STATEMENT">
+			merge into ${tableName} T
+			   using (			  
+		            select
+		             ${vo.pointCode} as pointCode,
+					  '${vo.polluteCode}' as polluteCode,
+					  '${vo.dataType}' as MONITORTYPE,
+					  to_date('${vo.dataTime}','yyyy-mm-dd hh24:mi:ss') as dataTime,
+					  to_date('${vo.updateTime}' ,'yyyy-mm-dd hh24:mi:ss') as updateTime,
+			            <choose><when test="vo.maxValue!=null">${vo.maxValue}</when><otherwise>null</otherwise></choose> as maxValue,
+			            <choose><when test="vo.minValue!=null">${vo.minValue}</when><otherwise>null</otherwise></choose> as minValue,
+			            <choose><when test="vo.dataValue!=null">${vo.dataValue}</when><otherwise>null</otherwise></choose> as AVGVALUE,
+					  '${vo.dataFlag}' as dataFlag
+					from dual    
+			   ) S ON  (T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE and T.MONITORTYPE=S.MONITORTYPE and T.DATATIME=S.DATATIME)
+			   when matched then
+			   update set T.UPDATETIME=S.UPDATETIME, T.MAXVALUE=S.MAXVALUE, 
+               T.MINVALUE=S.MINVALUE, T.AVGVALUE=S.AVGVALUE, 
+               T.DATAFLAG=S.DATAFLAG
+			   when not matched then
+			   insert (POINTCODE,
+					  POLLUTECODE,
+					  MONITORTYPE,
+					  DATATIME,
+					  UPDATETIME,
+					  MAXVALUE,
+					  MINVALUE,
+					  AVGVALUE,
+					  DATAFLAG) values(S.POINTCODE,
+					  S.POLLUTECODE,
+					  S.MONITORTYPE,
+					  S.DATATIME,
+					  S.UPDATETIME,
+					  S.MAXVALUE,
+					  S.MINVALUE,
+					  S.AVGVALUE,
+					  S.DATAFLAG)	  
+	</insert>
+
+	<insert id="insertAuditDataBatch" statementType="STATEMENT">			
+		merge into ${tableName}  T
+		   using (
+		   <foreach collection="list" item="item" index="index" separator="union all">
+			select 
+			 ${item.pointCode} as pointCode , 
+			 '${item.polluteCode}' as polluteCode,
+			  to_date('${item.dataTime}','yyyy-mm-dd hh24:mi:ss') as dataTime,
+			  <choose><when test="item.auditValue!=null">${item.auditValue}</when><otherwise>null</otherwise></choose> as auditValue,
+			 to_date('${item.updateTime}','yyyy-mm-dd hh24:mi:ss') as updateTime,
+			  ${item.isValided} as isValided,
+			   '${item.dataFlag}' as  dataFlag,
+			   '${item.dataStatus}' as  DATASTATUS
+			 from dual
+			</foreach>) S  ON  (T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE  and T.DATATIME=S.DATATIME)
+		   when matched then
+		   update set  T.UPDATETIME=S.UPDATETIME, T.AUDITVALUE=S.AUDITVALUE, T.ISVALIDED=S.ISVALIDED, T.dataFlag=S.dataFlag, T.DATASTATUS=S.DATASTATUS
+		   when not matched then
+		   insert
+		   ( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  ISVALIDED,
+			  dataFlag,
+			  DATASTATUS
+			  )
+		    values(S.POINTCODE,
+			  S.POLLUTECODE,
+			  S.DATATIME,
+			  S.AUDITVALUE,
+			  S.UPDATETIME,
+			  S.ISVALIDED,
+			  S.dataFlag,
+			  S.DATASTATUS
+			  )
+		</insert>
+		
+			
+	<update id="reviewData" statementType="STATEMENT">
+		UPDATE ${tableName}
+			SET DATASTATUS=2
+		WHERE POINTCODE=${pointCode}
+			<if test="beginTime!=null and beginTime!=''">
+				AND DATATIME &gt;=to_date('${beginTime}','yyyy-mm-dd hh24:mi:ss')
+			</if>
+			AND DATATIME &lt; to_date('${endTime}','yyyy-mm-dd hh24:mi:ss')
+			AND	DATASTATUS=1
+	</update>
+	
+	<update id="auditData" statementType="STATEMENT">
+		UPDATE ${tableName}
+			SET DATASTATUS=1
+		WHERE POINTCODE=${pointCode}
+			<if test="beginTime!=null and beginTime!=''">
+				AND DATATIME &gt;=to_date('${beginTime}','yyyy-mm-dd hh24:mi:ss')
+			</if>
+			AND DATATIME &lt; to_date('${endTime}','yyyy-mm-dd hh24:mi:ss')
+			AND	(DATASTATUS=0 OR DATASTATUS is null)
+			AND POLLUTECODE in (SELECT POLLUTECODE FROM T_DIC_STDPOLLCODE WHERE ISAUDIT=1)
+	</update>
+	
+</mapper>

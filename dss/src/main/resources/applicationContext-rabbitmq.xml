@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.2.xsd  
+    http://www.springframework.org/schema/rabbit 
+    http://www.springframework.org/schema/rabbit/spring-rabbit-1.4.xsd  
+    http://www.springframework.org/schema/task  
+    http://www.springframework.org/schema/task/spring-task-4.2.xsd">
+
+	<import resource="classpath:rabbitmq.xml" />
+
+	<rabbit:connection-factory id="rabbitConnectionFactory"
+		host="${rabbitmq.host}" username="${rabbitmq.username}" password="${rabbitmq.password}"
+		port="${rabbitmq.port}" virtual-host="${rabbitmq.vhost}"
+		channel-cache-size="6" />
+
+	<!-- rabbit:admin用于管理（创建和删除） exchanges, queues and bindings等 -->
+	<rabbit:admin connection-factory="rabbitConnectionFactory"
+		id="rabbitAdmin" />
+
+	<!-- 给模板指定转换器 --><!-- mandatory必须设置true,return callback才生效 -->
+	
+	<rabbit:template id="amqpTemplate" reply-timeout="1000"
+		connection-factory="rabbitConnectionFactory" confirm-callback="confirmCallBackListener"
+		return-callback="returnCallBackListener" mandatory="true" />
+		
+		
+	<rabbit:listener-container
+		connection-factory="rabbitConnectionFactory" acknowledge="manual">
+		<rabbit:listener queues="StationCfg_dss" ref="stationCfgHandler" />
+	</rabbit:listener-container>
+
+	<rabbit:listener-container
+		connection-factory="rabbitConnectionFactory" acknowledge="manual"
+		prefetch="2500">
+		<!-- concurrency="6" -->
+		<rabbit:listener queues="T212Cycle" ref="cycleHandler" />
+	</rabbit:listener-container>
+
+</beans>  

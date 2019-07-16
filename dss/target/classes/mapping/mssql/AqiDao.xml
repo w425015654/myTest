@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dss.dao.AqiDao">
+
+	<select id="queryMointorDataDD" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		select 
+		  d.POINTCODE AS pointCode,
+		  d.POLLUTECODE AS polluteCode,
+		  DATATIME AS dataTime,
+		  DATAVALUE AS dataValue,
+		  MAXVALUE AS maxValue,
+		  MINVALUE AS minValue,
+		  AUDITVALUE AS auditValue,
+		  DATASTATUS AS dataStatus,
+		  ISVALIDED AS isValided,
+		  DATAFLAG AS dataFlag,
+		  s.NUMPRECISION AS numPrecision,
+		  p.SYSTEMTYPE AS ST 
+		from
+		  T_ENV_MONI_AIR_DATADD d,
+		  T_PS_BAS_POINTLIST p,
+		  T_DIC_STDPOLLCODE s,
+		  T_DIC_SYSTYPE_POLLCODE_REL r 
+		WHERE d.pointcode = p.pointcode 
+		  AND d.POLLUTECODE = s.POLLUTECODE 
+		  AND s.CODECLASS = r.CODECLASS
+		  AND p.SYSTEMTYPE=22
+		  AND p.SYSTEMTYPE = r.SYSTEMTYPE
+		 <!--  AND d.ISVALIDED=1 AND AUDITVALUE IS NOT NULL -->
+		<if test="pointCode!=null and pointCode!=''">
+			AND d.pointCode=#{pointCode}
+		</if>
+		<if test="areaCodes !=null and areaCodes.size>0 ">
+			AND p.REGIONCODE IN
+			<foreach collection="areaCodes" separator="," item="areaCode" open="("
+			close=")">
+				#{areaCode}
+			</foreach>
+			and p.isrqc=1 
+			and p.status in (0,1)
+		</if>
+		<if test="beginTime!=null">
+			AND DATATIME  &gt;=#{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND DATATIME &lt; #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+
+	<select id="queryMointorDataHH" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		select 
+		  d.POINTCODE AS pointCode,
+		  d.POLLUTECODE AS polluteCode,
+		  DATATIME AS dataTime,
+		  DATAVALUE AS dataValue,
+		  MAXVALUE AS maxValue,
+		  MINVALUE AS minValue,
+		  AUDITVALUE AS auditValue,
+		  DATASTATUS AS dataStatus,
+		  ISVALIDED AS isValided,
+		  DATAFLAG AS dataFlag,
+		  s.NUMPRECISION AS numPrecision,
+		  p.SYSTEMTYPE AS ST
+		from
+		  T_ENV_MONI_AIR_DATAHH d,
+		  T_PS_BAS_POINTLIST p,
+		  T_DIC_STDPOLLCODE s,
+		  T_DIC_SYSTYPE_POLLCODE_REL r 
+	  WHERE d.pointcode = p.pointcode 
+		  AND d.POLLUTECODE = s.POLLUTECODE 
+		  AND s.CODECLASS = r.CODECLASS 
+		  AND p.SYSTEMTYPE = r.SYSTEMTYPE
+		  AND p.SYSTEMTYPE=22
+		  AND d.ISVALIDED=1
+		  AND (d.OUTLIERDOUBTFUL != 1 or OUTLIERDOUBTFUL is null)
+		 <!--  AND d.ISVALIDED=1 AND AUDITVALUE IS NOT NULL -->
+		<if test="pointCodes!=null and pointCodes.size>0 ">
+			AND d.pointCode  IN
+			<foreach collection="pointCodes" separator="," item="pointCode"
+				open="(" close=")">
+				#{pointCode}
+			</foreach>
+		</if>
+		<if test="areaCodes !=null and areaCodes.size>0 ">
+			AND p.REGIONCODE IN
+			<foreach collection="areaCodes" separator="," item="areaCode" open="("
+			close=")">
+				#{areaCode}
+			</foreach>
+			and p.isrqc=1 
+			and p.status in (0,1)
+		</if>
+		<if test="beginTime!=null">
+			AND DATATIME  &gt;=#{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND DATATIME &lt; #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+	
+	
+	<select id="queryMonData" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+           
+        SELECT  *  from  T_ENV_MONI_AIR_DATAHH T WHERE 1=1
+        <if test="beginTime!=null">
+			AND T.DATATIME &gt;=#{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND T.DATATIME &lt;=#{endTime}
+		</if>
+    </select>
+	
+	
+	
+	<insert id="insertAQIDD">
+		MERGE INTO T_ENV_MONI_AIR_AQIDD AS T
+		USING (VALUES		
+				(
+				 #{vo.code,jdbcType=VARCHAR},
+				  #{vo.dataTime,jdbcType=TIMESTAMP},
+				  #{vo.aqi,jdbcType=INTEGER},
+				  #{vo.pm25Iaqi,jdbcType=INTEGER},
+				  #{vo.pm25,jdbcType=DOUBLE},
+				  #{vo.pm10,jdbcType=DOUBLE},
+				  #{vo.pm10Iaqi,jdbcType=INTEGER},
+				  #{vo.so2,jdbcType=DOUBLE},
+				  #{vo.so2Iaqi,jdbcType=INTEGER},
+				  #{vo.no2,jdbcType=DOUBLE},
+				  #{vo.no2Iaqi,jdbcType=INTEGER},
+				  #{vo.co,jdbcType=DOUBLE},
+				  #{vo.coIaqi,jdbcType=INTEGER},
+				  #{vo.o3,jdbcType=DOUBLE},
+				  #{vo.o3Iaqi,jdbcType=INTEGER},
+				  #{vo.o38,jdbcType=DOUBLE},
+				  #{vo.o38Iaqi,jdbcType=INTEGER},
+				  #{vo.polluteName,jdbcType=VARCHAR},
+				  #{vo.aqiId,jdbcType=INTEGER},
+				  #{vo.updateTime,jdbcType=TIMESTAMP},
+				  #{vo.level,jdbcType=INTEGER},
+				  #{vo.dataStatus,jdbcType=VARCHAR},
+				  #{vo.isValided,jdbcType=TINYINT}
+			)) AS S ( CODE,
+				  DATATIME,
+				  AQI,
+				  PM25IAQI,
+				  PM25,
+				  PM10,
+				  PM10IAQI,
+				  SO2,
+				  SO2IAQI,
+				  NO2,
+				  NO2IAQI,
+				  CO,
+				  COIAQI,
+				  O3,
+				  O3IAQI,
+				  O38,
+				  O38IAQI,
+				  POLLUTENAME,
+				  AQIID,
+				  UPDATETIME,
+				  [LEVEL],
+				  DATASTATUS,
+				  ISVALIDED)			  
+				  ON  S.CODE=T.CODE AND S.DATATIME=T.DATATIME AND  S.DATASTATUS=T.DATASTATUS
+			WHEN MATCHED THEN
+			 	UPDATE SET T.AQI=S.AQI,
+			 	  T.PM25IAQI=S.PM25IAQI,
+				  T.PM25=S.PM25,
+				  T.PM10=S.PM10,
+				  T.PM10IAQI=S.PM10IAQI,
+				  T.SO2=S.SO2,
+				  T.SO2IAQI= S.SO2IAQI,
+				  T.NO2= S.NO2,
+				  T.NO2IAQI=S.NO2IAQI,
+				  T.CO= S.CO,
+				  T.COIAQI= S.COIAQI,
+				  T.O3= S.O3,
+				  T.O3IAQI=S.O3IAQI,
+				  T.O38=S.O38,
+				  T.O38IAQI=S.O38IAQI,
+				  T.POLLUTENAME=S.POLLUTENAME,
+				  T.AQIID= S.AQIID,
+				  T.UPDATETIME=S.UPDATETIME,
+				  T.[LEVEL]=S.[LEVEL],
+				  T.DATASTATUS=S.DATASTATUS,
+				  T.ISVALIDED=S.ISVALIDED
+			WHEN NOT MATCHED THEN 
+	    		INSERT ( CODE,
+				  DATATIME,
+				  AQI,
+				  PM25IAQI,
+				  PM25,
+				  PM10,
+				  PM10IAQI,
+				  SO2,
+				  SO2IAQI,
+				  NO2,
+				  NO2IAQI,
+				  CO,
+				  COIAQI,
+				  O3,
+				  O3IAQI,
+				  O38,
+				  O38IAQI,
+				  POLLUTENAME,
+				  AQIID,
+				  UPDATETIME,
+				  [LEVEL],
+				  DATASTATUS,
+				  ISVALIDED) VALUES (S.CODE,
+				  S.DATATIME,
+				  S.AQI,
+				  S.PM25IAQI,
+				  S.PM25,
+				  S.PM10,
+				  S.PM10IAQI,
+				  S.SO2,
+				  S.SO2IAQI,
+				  S.NO2,
+				  S.NO2IAQI,
+				  S.CO,
+				  S.COIAQI,
+				  S.O3,
+				  S.O3IAQI,
+				  S.O38,
+				  S.O38IAQI,
+				  S.POLLUTENAME,
+				  S.AQIID,
+				  S.UPDATETIME,
+				  S.[LEVEL],
+				  S.DATASTATUS,
+				  S.ISVALIDED);				  
+	</insert>
+
+	<insert id="insertAQIHH">
+		MERGE INTO T_ENV_MONI_AIR_AQIHH AS T
+			USING (VALUES(
+			 	 #{vo.code,jdbcType=VARCHAR},
+				  #{vo.dataTime,jdbcType=TIMESTAMP},
+				  #{vo.aqi,jdbcType=INTEGER},
+				  #{vo.pm25Iaqi,jdbcType=INTEGER},
+				  #{vo.pm25,jdbcType=DOUBLE},
+				  #{vo.pm10,jdbcType=DOUBLE},
+				  #{vo.pm10Iaqi,jdbcType=INTEGER},
+				  #{vo.so2,jdbcType=DOUBLE},
+				  #{vo.so2Iaqi,jdbcType=INTEGER},
+				  #{vo.no2,jdbcType=DOUBLE},
+				  #{vo.no2Iaqi,jdbcType=INTEGER},
+				  #{vo.co,jdbcType=DOUBLE},
+				  #{vo.coIaqi,jdbcType=INTEGER},
+				  #{vo.o3,jdbcType=DOUBLE},
+				  #{vo.o3Iaqi,jdbcType=INTEGER},
+				  #{vo.o38,jdbcType=DOUBLE},
+				  #{vo.o38Iaqi,jdbcType=INTEGER},
+				  #{vo.polluteName,jdbcType=VARCHAR},
+				  #{vo.aqiId,jdbcType=INTEGER},
+				  #{vo.updateTime,jdbcType=TIMESTAMP},
+				  #{vo.level,jdbcType=INTEGER},
+				  #{vo.avgvaluePm25,jdbcType=DOUBLE},
+				  #{vo.avgvaluePm10,jdbcType=DOUBLE},
+				  #{vo.dataStatus,jdbcType=VARCHAR},
+				  #{vo.isValided,jdbcType=TINYINT}		
+			)) AS S ( CODE,
+					  DATATIME,
+					  AQI,
+					  PM25IAQI,
+					  PM25,
+					  PM10,
+					  PM10IAQI,
+					  SO2,
+					  SO2IAQI,
+					  NO2,
+					  NO2IAQI,
+					  CO,
+					  COIAQI,
+					  O3,
+					  O3IAQI,
+					  O38,
+					  O38IAQI,
+					  POLLUTENAME,
+					  AQIID,
+					  UPDATETIME,
+					  [LEVEL],
+					  AVGVALUE_PM25,
+	  				  AVGVALUE_PM10,
+	  				  DATASTATUS,
+	  				  ISVALIDED)			  
+					  ON  T.CODE=S.CODE AND T.DATATIME=S.DATATIME AND S.DATASTATUS=T.DATASTATUS
+				WHEN MATCHED THEN
+				 	UPDATE SET  T.AQI=S.AQI,
+				 	  T.PM25IAQI=S.PM25IAQI,
+					  T.PM25=S.PM25,
+					  T.PM10=S.PM10,
+					  T.PM10IAQI=S.PM10IAQI,
+					  T.SO2=S.SO2,
+					  T.SO2IAQI= S.SO2IAQI,
+					  T.NO2= S.NO2,
+					  T.NO2IAQI=S.NO2IAQI,
+					  T.CO= S.CO,
+					  T.COIAQI= S.COIAQI,
+					  T.O3= S.O3,
+					  T.O3IAQI=S.O3IAQI,
+					  T.O38=S.O38,
+					  T.O38IAQI=S.O38IAQI,
+					  T.POLLUTENAME=S.POLLUTENAME,
+					  T.AQIID= S.AQIID,
+					  T.UPDATETIME=S.UPDATETIME,
+					  T.[LEVEL]=S.[LEVEL],
+					  T.AVGVALUE_PM25=S.AVGVALUE_PM25,
+					  T.AVGVALUE_PM10=S.AVGVALUE_PM10,
+					  T.DATASTATUS=S.DATASTATUS,
+					  T.ISVALIDED=S.ISVALIDED
+				WHEN NOT MATCHED THEN 
+		    		INSERT ( CODE,
+					  DATATIME,
+					  AQI,
+					  PM25IAQI,
+					  PM25,
+					  PM10,
+					  PM10IAQI,
+					  SO2,
+					  SO2IAQI,
+					  NO2,
+					  NO2IAQI,
+					  CO,
+					  COIAQI,
+					  O3,
+					  O3IAQI,
+					  O38,
+					  O38IAQI,
+					  POLLUTENAME,
+					  AQIID,
+					  UPDATETIME,
+					  [LEVEL],
+					  AVGVALUE_PM25,
+	  				  AVGVALUE_PM10,
+	  				  DATASTATUS,
+	  				  ISVALIDED) VALUES (
+	  				  S.CODE,
+	  				  S.DATATIME,
+	  				  S.AQI,
+					  S.PM25IAQI,
+					  S.PM25,
+					  S.PM10,
+					  S.PM10IAQI,
+					  S.SO2,
+					  S.SO2IAQI,
+					  S.NO2,
+					  S.NO2IAQI,
+					  S.CO,
+					  S.COIAQI,
+					  S.O3,
+					  S.O3IAQI,
+					  S.O38,
+					  S.O38IAQI,
+					  S.POLLUTENAME,
+					  S.AQIID,
+					  S.UPDATETIME,
+					  S.[LEVEL],
+					  S.AVGVALUE_PM25,
+					  S.AVGVALUE_PM10,
+					  S.DATASTATUS,
+					  S.ISVALIDED);
+		</insert>
+				
+		<select id="queryIAQIRange" resultType="com.zeei.das.dss.vo.IAQIRangeVO">
+			SELECT 
+			  POLLUTECODE,
+			  DATATYPE,
+			  BPHI,
+			  BPLO,
+			  IAQIHI,
+			  IAQILO 
+			FROM
+			  T_DIC_IAQIRANGE 
+			ORDER BY datatype,
+			  bphi 
+	   </select>
+	   
+	   <select id="queryAQILevel" resultType="com.zeei.das.dss.vo.AQILevelVO">
+			select 
+			  AQIID,
+			  AQILEVEL,
+			  MINAQI,
+			  MAXAQI,
+			  AQITYPE,
+			  SHOWCOLOR,
+			  EFFECT,
+			  COLORURL,
+			  SUGGESTION 
+			from
+			  T_DIC_AQILEVEL  
+	   </select>
+	   
+	   <select id="queryArea" resultType="com.zeei.das.dss.vo.AreaVO">
+			SELECT 
+			  CODE_REGION AS areaCode,
+			  PCODE AS pCode,
+			  [LEVEL] 
+			FROM
+			  T_DIC_AREACODE  
+	   </select>
+	   
+	   
+		<select id="queryPollute" resultType="com.zeei.das.dss.vo.PolluteVO">
+		SELECT DISTINCT 
+		  pollutecode,
+		  pollutename,
+		  numPrecision 
+		FROM
+		  T_DIC_STDPOLLCODE a,
+		  T_DIC_SYSTYPE_POLLCODE_REL b 
+		WHERE a.CODECLASS = b.CODECLASS 
+		  AND systemtype = 22 
+		  AND pollutecode IN (
+		    'a05024',
+		    'a21004',
+		    'a21005',
+		    'a21026',
+		    'a34002',
+		    'a34004'
+		  )
+	</select>
+
+    <select id="queryAreaPoint" resultType="com.zeei.das.dss.vo.ParamsVo">
+	 SELECT 
+		  b.code_region AS areaCode,
+		  p.pointcode 
+		FROM
+		  T_DIC_AREACODE b 
+		  JOIN T_PS_BAS_POINTLIST p 
+		    ON SUBSTRING(b.code_region, 1, 4) = SUBSTRING(p.REGIONCODE, 1, 4) 
+		    AND SYSTEMTYPE = 22 
+		WHERE p.status IN (0, 1) 
+		  AND b.level = 2 
+	</select>
+	
+	<update id="updateOutlierHH" parameterType="java.util.List">
+	
+        <foreach collection="datas" item="bean" index="index" open="" close="" separator=";">
+            UPDATE  T_ENV_MONI_AIR_DATAHH
+            <set>
+                OUTLIERDOUBTFUL = 1
+            </set>
+            <where>
+            POINTCODE = #{bean.pointCode}
+            AND  POLLUTECODE = #{bean.polluteCode}
+		    AND  DATATIME =  #{bean.dataTime}
+            </where>
+        </foreach>
+
+    </update>
+    
+    <select id="getBETime" resultType="String">
+		  SELECT  
+		     <choose>
+		       <when test="flag!=null">
+		          MIN(DATATIME)
+		       </when>
+		       <otherwise>
+		          MAX(DATATIME)
+		       </otherwise>
+		     </choose>  
+		 FROM   T_ENV_MONI_AIR_AQIHH  
+			 WHERE 
+		 AQI > 200
+		<if test="beginDate!=null">
+			AND DATATIME &gt;=#{beginDate}
+		</if>
+		<if test="endDate!=null">
+			AND DATATIME &lt;#{endDate}
+		</if>
+		<if test="code!=null">
+			AND  CODE = #{code}
+		</if>
+	</select>
+	
+	
+	<insert id="insertAirHvy">
+		MERGE INTO T_ENV_MONI_AIR_HVYDAY_STAT AS T
+			USING (VALUES(
+			 	  #{vo.code,jdbcType=VARCHAR},
+			 	  #{vo.pollNameList,jdbcType=VARCHAR},
+				  #{vo.sdate,jdbcType=TIMESTAMP},
+				  #{vo.edate,jdbcType=TIMESTAMP},
+				  #{vo.sdateTime,jdbcType=TIMESTAMP},
+				  #{vo.edateTime,jdbcType=TIMESTAMP},
+				  #{vo.updateTime,jdbcType=TIMESTAMP},
+				  #{vo.dlevel,jdbcType=INTEGER}	
+			)) AS S ( CODE,
+			          pollNameList,
+					  SDATE,
+					  EDATE,
+					  SDATETIME,
+					  EDATETIME,
+					  UPDATETIME,
+					  DLEVEL)			  
+					  ON  T.CODE=S.CODE AND T.SDATE=S.SDATE 
+				WHEN MATCHED THEN
+				 	UPDATE SET  
+				 	  T.EDATE = S.EDATE,
+				 	  T.pollNameList = S.pollNameList,
+				 	  T.EDATETIME = S.EDATETIME,
+					  T.UPDATETIME=S.UPDATETIME
+				WHEN NOT MATCHED THEN 
+		    		INSERT ( 
+		    		  CODE,
+		    		  pollNameList,
+					  SDATE,
+					  EDATE,
+					  SDATETIME,
+					  EDATETIME,
+					  UPDATETIME,
+					  DLEVEL) VALUES (
+	  				  S.CODE,
+	  				  S.pollNameList,
+					  S.SDATE,
+					  S.EDATE,
+					  S.SDATETIME,
+					  S.EDATETIME,
+					  S.UPDATETIME,
+					  S.DLEVEL);
+	</insert>
+
+      
+     <insert id="insertPollIncident" parameterType="com.zeei.das.dss.vo.PollIncidentVo" useGeneratedKeys="true" keyProperty="vo.recId">
+		INSERT INTO T_ENV_MONI_AIR_OPREC
+		(POINTCODE,
+		STIME,
+		ETIME,
+		OFTYPE,
+		UPDATETIME)
+		VALUES
+		(#{vo.pointCode,jdbcType=INTEGER},
+		 #{vo.sTime,jdbcType=TIMESTAMP},
+		 #{vo.eTime,jdbcType=TIMESTAMP},
+		 #{vo.ofType,jdbcType=INTEGER},
+		 #{vo.updateTime,jdbcType=TIMESTAMP})
+    </insert>
+    
+    
+    <update id="updatePollIncident" parameterType="java.util.List">
+	
+        <foreach collection="datas" item="bean" index="index" open="" close="" separator=";">
+            UPDATE  T_ENV_MONI_AIR_OPREC
+            <set>
+                <if test="bean.eTime != null">
+                   ETIME =  #{bean.eTime,jdbcType=TIMESTAMP},
+                </if>
+                OFTYPE = #{bean.ofType}
+            </set>
+            <where>
+              RECID = #{bean.recId}
+            </where>
+        </foreach>
+
+    </update>
+    
+     <insert id="insertAirOprecDetls" parameterType="java.util.List">
+	
+	    INSERT INTO T_ENV_MONI_AIR_OPREC_DETL(RECID,AQI, POLLUTENAME,
+		DATATIME,UPDATETIME,DTYPE)
+		VALUES
+		<foreach collection="datas" item="item" index="index" separator=",">
+			(
+			
+			#{item.recId,jdbcType=INTEGER},
+   			#{item.aqi,jdbcType=INTEGER},
+   			#{item.polluteName,jdbcType=VARCHAR},
+   			#{item.dataTime,jdbcType=TIMESTAMP},
+   			#{item.updateTime,jdbcType=TIMESTAMP},
+   			#{item.dType,jdbcType=INTEGER}
+			)
+		</foreach>
+	
+	</insert>
+	
+	<select id="queryMointorDataMM" resultType="com.zeei.das.dss.vo.MonitorDataVO">
+		select 
+		  d.POINTCODE AS pointCode,
+		  d.POLLUTECODE AS polluteCode,
+		  DATATIME AS dataTime,
+		  AVG(DATAVALUE) AS dataValue
+		from
+		  ${tableName} d,
+		  T_PS_BAS_POINTLIST p,
+		  T_DIC_STDPOLLCODE s
+		 
+		WHERE d.pointcode = p.pointcode 
+		  AND d.POLLUTECODE = s.POLLUTECODE 
+		  AND p.SYSTEMTYPE=22
+		  AND DATAVALUE &gt;= 0
+		  AND d.ISVALIDED=1 
+		  AND DATAVALUE IS NOT NULL
+		 <!--  AND d.ISVALIDED=1 AND AUDITVALUE IS NOT NULL -->
+		AND d.pointCode in
+		<foreach collection="pointCodes" separator="," item="pointCode" open="("
+			close=")">
+			#{pointCode}
+		</foreach>
+
+		<if test="beginTime!=null">
+			AND DATATIME  &gt;=#{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND DATATIME &lt; #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+		GROUP  BY  d.POINTCODE ,d.POLLUTECODE , DATATIME
+		
+	</select>
+	
+	
+	<insert id="insertMinAqiDatas"   parameterType="java.util.List">
+		MERGE INTO T_ENV_MONI_AIR_AQIRT  AS T
+		USING (VALUES
+		<foreach collection="datas" item="vo" index="index"
+			separator=",">		
+				(
+				 #{vo.code,jdbcType=VARCHAR},
+				  #{vo.dataTime,jdbcType=TIMESTAMP},
+				  #{vo.aqi,jdbcType=INTEGER},
+				  #{vo.pm25Iaqi,jdbcType=INTEGER},
+				  #{vo.pm25,jdbcType=DOUBLE},
+				  #{vo.pm10,jdbcType=DOUBLE},
+				  #{vo.pm10Iaqi,jdbcType=INTEGER},
+				  #{vo.so2,jdbcType=DOUBLE},
+				  #{vo.so2Iaqi,jdbcType=INTEGER},
+				  #{vo.no2,jdbcType=DOUBLE},
+				  #{vo.no2Iaqi,jdbcType=INTEGER},
+				  #{vo.co,jdbcType=DOUBLE},
+				  #{vo.coIaqi,jdbcType=INTEGER},
+				  #{vo.o3,jdbcType=DOUBLE},
+				  #{vo.o3Iaqi,jdbcType=INTEGER},
+				  #{vo.o38,jdbcType=DOUBLE},
+				  #{vo.o38Iaqi,jdbcType=INTEGER},
+				  #{vo.polluteName,jdbcType=VARCHAR},
+				  #{vo.aqiId,jdbcType=INTEGER},
+				  #{vo.updateTime,jdbcType=TIMESTAMP},
+				  #{vo.level,jdbcType=INTEGER},
+				  #{vo.dataStatus,jdbcType=VARCHAR},
+				  #{vo.isValided,jdbcType=TINYINT}
+			)
+			</foreach>
+			) AS S ( CODE,
+				  DATATIME,
+				  AQI,
+				  PM25IAQI,
+				  PM25,
+				  PM10,
+				  PM10IAQI,
+				  SO2,
+				  SO2IAQI,
+				  NO2,
+				  NO2IAQI,
+				  CO,
+				  COIAQI,
+				  O3,
+				  O3IAQI,
+				  O38,
+				  O38IAQI,
+				  POLLUTENAME,
+				  AQIID,
+				  UPDATETIME,
+				  [LEVEL],
+				  DATASTATUS,
+				  ISVALIDED)			  
+				  ON  S.CODE=T.CODE AND S.DATATIME=T.DATATIME AND  S.DATASTATUS=T.DATASTATUS
+			WHEN MATCHED THEN
+			 	UPDATE SET T.AQI=S.AQI,
+			 	  T.PM25IAQI=S.PM25IAQI,
+				  T.PM25=S.PM25,
+				  T.PM10=S.PM10,
+				  T.PM10IAQI=S.PM10IAQI,
+				  T.SO2=S.SO2,
+				  T.SO2IAQI= S.SO2IAQI,
+				  T.NO2= S.NO2,
+				  T.NO2IAQI=S.NO2IAQI,
+				  T.CO= S.CO,
+				  T.COIAQI= S.COIAQI,
+				  T.O3= S.O3,
+				  T.O3IAQI=S.O3IAQI,
+				  T.O38=S.O38,
+				  T.O38IAQI=S.O38IAQI,
+				  T.POLLUTENAME=S.POLLUTENAME,
+				  T.AQIID= S.AQIID,
+				  T.UPDATETIME=S.UPDATETIME,
+				  T.[LEVEL]=S.[LEVEL],
+				  T.DATASTATUS=S.DATASTATUS,
+				  T.ISVALIDED=S.ISVALIDED
+			WHEN NOT MATCHED THEN 
+	    		INSERT ( CODE,
+				  DATATIME,
+				  AQI,
+				  PM25IAQI,
+				  PM25,
+				  PM10,
+				  PM10IAQI,
+				  SO2,
+				  SO2IAQI,
+				  NO2,
+				  NO2IAQI,
+				  CO,
+				  COIAQI,
+				  O3,
+				  O3IAQI,
+				  O38,
+				  O38IAQI,
+				  POLLUTENAME,
+				  AQIID,
+				  UPDATETIME,
+				  [LEVEL],
+				  DATASTATUS,
+				  ISVALIDED) VALUES (S.CODE,
+				  S.DATATIME,
+				  S.AQI,
+				  S.PM25IAQI,
+				  S.PM25,
+				  S.PM10,
+				  S.PM10IAQI,
+				  S.SO2,
+				  S.SO2IAQI,
+				  S.NO2,
+				  S.NO2IAQI,
+				  S.CO,
+				  S.COIAQI,
+				  S.O3,
+				  S.O3IAQI,
+				  S.O38,
+				  S.O38IAQI,
+				  S.POLLUTENAME,
+				  S.AQIID,
+				  S.UPDATETIME,
+				  S.[LEVEL],
+				  S.DATASTATUS,
+				  S.ISVALIDED);				  
+	</insert>
+
+
+</mapper>

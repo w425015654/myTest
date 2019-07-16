@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.cas.dao.CtlMsgDao">
+
+	<insert id="insertCtrlRecDetail" parameterType="com.zeei.das.cas.vo.CtlRecDetailVO">
+		INSERT INTO
+		T_BAS_COMPDATA_REC_DETAIL (
+		SID,
+		QN,
+		DATATIME,
+		RESULT,
+		USERID,
+		REMARK
+		)
+		VALUES(
+		S_T_BAS_COMPDATA_REC_DETAIL.NEXTVAL,
+		#{QN,jdbcType=VARCHAR},
+		to_date(#{dataTime},'yyyy-mm-dd hh24:mm:ss'),
+		#{result,jdbcType=VARCHAR},
+		-1,
+		#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateCtlRec" parameterType="com.zeei.das.cas.vo.CtlRecDetailVO">
+		UPDATE
+		T_BAS_COMPDATA_REC SET CMDSTATUS = #{cmdStatus,jdbcType=INTEGER}
+		WHERE
+		QN =#{QN}
+	</update>
+
+	<insert id="insertCompRecDetailByBatch" parameterType="java.util.List">
+		INSERT INTO
+		T_BAS_COMPDATA_REC_DETAIL (
+		SID,
+		QN,
+		DATATIME,
+		RESULT,
+		USERID,
+		REMARK
+		)
+		SELECT S_T_BAS_COMPDATA_REC_DETAIL.NEXTVAL,a.* from (
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			(
+			SELECT
+			#{item.QN} qn,
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss') dt,
+			#{item.result} rt,
+			-1 usid,
+			#{item.remark} remark
+			from dual
+			)
+		</foreach>
+		) a
+	</insert>
+
+	<update id="updateCompRecByBatch" parameterType="com.zeei.das.cas.vo.CtlRecDetailVO">
+		<foreach collection="list" item="item" index="index" open="begin" close="end;">
+			UPDATE T_BAS_COMPDATA_REC SET CMDSTATUS = #{item.cmdStatus}	WHERE QN =#{item.QN};
+		</foreach>
+
+	</update>
+	
+	
+	<insert id="insert2070ByBatch" parameterType="java.util.List" useGeneratedKeys="false">
+	
+	    INSERT INTO T_BAS_QC_RESULT(PIKD,POINTCODE, DATATIME, CMDTYPE,
+		POLLUTECODE,QN,TAGVAL,RESVAL,DEVAL,ALARMVAL,CTRLVAL,QCSOURCE,QCRESULT)
+		SELECT S_T_BAS_QC_RESULT.NEXTVAL,a.* FROM (
+        <foreach collection="list" item="item" separator="union all">
+		        SELECT
+        			#{item.pointCode,jdbcType=INTEGER},
+					to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss'),
+					#{item.cmdType,jdbcType=VARCHAR},
+					#{item.polluteCode,jdbcType=VARCHAR},
+					#{item.qn,jdbcType=VARCHAR},
+					#{item.tagval,jdbcType=VARCHAR},
+					#{item.resval,jdbcType=VARCHAR},
+					#{item.deval,jdbcType=VARCHAR},
+					#{item.alarmVal,jdbcType=VARCHAR},
+					#{item.ctrlVal,jdbcType=VARCHAR},
+					#{item.qcSource,jdbcType=VARCHAR},
+					#{item.qcResult,jdbcType=VARCHAR}
+		        FROM dual
+        </foreach>
+        ) a
+
+	</insert>
+
+
+	<insert id="insertCtrlRecDetailByBatch" parameterType="java.util.List">
+		INSERT INTO	T_BAS_CONTROL_REC_DETAIL (
+		SID,
+		QN,
+		DATATIME,
+		RESULT,
+		USERID,
+		REMARK,
+		CODEID
+		)
+		SELECT S_T_BAS_COMPDATA_REC_DETAIL.NEXTVAL,a.* from (
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			SELECT
+		    #{item.QN},
+			to_date(#{item.dataTime},'yyyy-mm-dd	hh24:mi:ss'),
+			#{item.result},
+			-1,
+			#{item.remark},
+			#{item.codeID}
+			from dual			
+		</foreach>
+		) a
+		
+	</insert>
+
+	<update id="updateCtlRecByBatch" parameterType="com.zeei.das.cas.vo.CtlRecDetailVO">
+
+		<foreach collection="list" item="item" index="index" open="begin" close="end;">
+			UPDATE T_BAS_CONTROL_REC SET
+			CMDSTATUS = #{item.cmdStatus},
+			MRQSTR = #{item.mrqStr},
+			MRQFLAG =#{item.mrqFlag}
+			WHERE QN =#{item.QN};
+		</foreach>
+
+	</update>
+
+	<insert id="insert2076ByBatch" parameterType="java.util.List">
+		INSERT INTO T_BAS_POINT_LOG(POINTCODE, LOGTIME, LOGCONTENT,
+		USERID,LOGTYPE)
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			(
+			select
+			#{item.pointCode},
+			to_date(#{item.logTime},'yyyy-mm-dd hh24:mi:ss'),
+			#{item.logContent},
+			#{item.userId},
+			#{item.logType}
+			from dual
+			)
+		</foreach>
+	</insert>
+
+
+	<insert id="insert2076" parameterType="com.zeei.das.cas.vo.Msg2076VO">
+		INSERT INTO
+		T_BAS_POINT_LOG(POINTCODE, LOGTIME, LOGCONTENT,USERID,LOGTYPE)
+		VALUES(
+		#{item.pointCode,jdbcType=INTEGER},
+		to_date(#{item.logTime},'yyyy-mm-dd hh24:mi:ss'),
+		#{item.logContent,jdbcType=VARCHAR},
+		#{item.userId,jdbcType=INTEGER},
+		#{item.logType,jdbcType=VARCHAR}
+		)
+
+	</insert>
+
+	<insert id="insert2021ByBatch" parameterType="java.util.List">
+		INSERT INTO T_BAS_STATEHISTORY(POINTCODE, POLLUTECODE, STATUSCODE,
+		DATATIME,DATAVALUE,UPDATETIME)
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			(
+			select
+			#{item.pointCode},
+			#{item.polluteCode},
+			#{item.statusCode},
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss'),
+			#{item.dataValue},
+			to_date(#{item.updateTime},'yyyy-mm-dd hh24:mi:ss')
+			from dual
+			)
+		</foreach>
+	</insert>
+
+	<insert id="insert2021Latest">
+		MERGE INTO T_BAS_STATLATEST TARGET
+		USING (
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			select
+			#{item.pointCode} as pointCode,
+			#{item.polluteCode} as	polluteCode,
+			#{item.statusCode} as statusCode,
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss') as dataTime,
+			#{item.dataValue} as dataValue,
+			to_date(#{item.updateTime},'yyyy-mm-dd hh24:mi:ss') as updateTime
+			from dual
+		</foreach>
+		) SOURCE ON (SOURCE.POINTCODE=TARGET.POINTCODE AND
+		SOURCE.POLLUTECODE=TARGET.POLLUTECODE AND
+		SOURCE.STATUSCODE=TARGET.STATUSCODE)
+		WHEN MATCHED THEN
+		UPDATE SET
+		TARGET.DATATIME= SOURCE.DATATIME,
+		TARGET.DATAVALUE=SOURCE.DATAVALUE,
+		TARGET.UPDATETIME=SOURCE.UPDATETIME
+		WHEN NOT MATCHED THEN
+		INSERT
+		(POINTCODE, POLLUTECODE, STATUSCODE,DATATIME,DATAVALUE,UPDATETIME)
+		VALUES (SOURCE.POINTCODE, SOURCE.POLLUTECODE,
+		SOURCE.STATUSCODE,SOURCE.DATATIME,SOURCE.DATAVALUE,SOURCE.UPDATETIME)
+	</insert>
+	
+	<insert id="insert2062ByBatch" parameterType="java.util.List">
+		MERGE INTO T_ENV_MONI_RIV_CHKDATA   TARGET  USING(
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			select
+			#{item.pointCode,jdbcType=INTEGER} as POINTCODE,
+			#{item.ParamID,jdbcType=VARCHAR} as POLLUTECODE,
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss') as DATATIME,
+			#{item.StandardValue,jdbcType=VARCHAR} as DATAVALUE,
+			#{item.Check,jdbcType=DOUBLE} as DCHECK,
+			#{item.Volume,jdbcType=DOUBLE} as VOLUME,
+			#{item.DVolume,jdbcType=DOUBLE} as DVOLUME,
+			#{item.Flag,jdbcType=VARCHAR} as DATAFLAG,
+			#{item.qn,jdbcType=VARCHAR} as qn,
+			to_date(#{item.updateTime},'yyyy-mm-dd hh24:mi:ss') as UPDATETIME,
+			#{item.dataType,jdbcType=INTEGER} as dataType,
+			#{item.dataStatus,jdbcType=INTEGER} as dataStatus
+			from dual
+		</foreach>
+		)  SOURCE
+		ON  (SOURCE.POINTCODE=TARGET.POINTCODE AND SOURCE.POLLUTECODE=TARGET.POLLUTECODE 
+		     AND SOURCE.DATATIME=TARGET.DATATIME AND SOURCE.dataType=TARGET.dataType)
+		WHEN MATCHED THEN
+		 	UPDATE SET TARGET.DATAVALUE= SOURCE.DATAVALUE,
+		 	TARGET.DCHECK=SOURCE.DCHECK,
+		 	TARGET.VOLUME=SOURCE.VOLUME,
+		 	TARGET.DVOLUME=SOURCE.DVOLUME,
+		 	TARGET.DATAFLAG=SOURCE.DATAFLAG,
+		 	TARGET.qn=SOURCE.qn,
+		 	TARGET.UPDATETIME=SOURCE.UPDATETIME
+		WHEN NOT MATCHED THEN 
+    		INSERT (POINTCODE, POLLUTECODE, DATATIME, DATAVALUE, DCHECK, VOLUME, DVOLUME, DATAFLAG, qn, UPDATETIME, dataType, dataStatus) 
+    		VALUES (SOURCE.POINTCODE, SOURCE.POLLUTECODE, SOURCE.DATATIME, SOURCE.DATAVALUE, SOURCE.DCHECK, SOURCE.VOLUME, 
+    		        SOURCE.DVOLUME, SOURCE.DATAFLAG, SOURCE.qn, SOURCE.UPDATETIME, SOURCE.dataType, SOURCE.dataStatus) 
+	</insert>
+	
+	<insert id="insert2063ByBatch" parameterType="java.util.List">
+		MERGE INTO T_ENV_MONI_RIV_RCYLDATA   TARGET USING(		  
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			select
+			#{item.pointCode,jdbcType=INTEGER} as pointCode,
+			#{item.ParamID,jdbcType=VARCHAR} as POLLUTECODE,
+			to_date(#{item.waterTime},'yyyy-mm-dd hh24:mi:ss') as FDATATIME,
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss') as DATATIME,
+			#{item.Water,jdbcType=DOUBLE} as DATAVALUE,
+			#{item.Check,jdbcType=DOUBLE} as DCHECK,
+			#{item.Chroma,jdbcType=DOUBLE} as DCHROMA,
+			#{item.Volume,jdbcType=DOUBLE} as VOLUME,
+			#{item.DVolume,jdbcType=DOUBLE} as DVOLUME,
+			#{item.Flag,jdbcType=VARCHAR} as DATAFLAG,
+			#{item.qn,jdbcType=VARCHAR} as qn,
+			to_date(#{item.updateTime},'yyyy-mm-dd hh24:mi:ss') as UPDATETIME,
+			#{item.dataType,jdbcType=INTEGER} as dataType,
+			#{item.dataStatus,jdbcType=INTEGER} as dataStatus
+			from dual
+		</foreach>
+		) SOURCE 
+		ON  (SOURCE.POINTCODE=TARGET.POINTCODE AND SOURCE.POLLUTECODE=TARGET.POLLUTECODE 
+		    AND SOURCE.DATATIME=TARGET.DATATIME  AND SOURCE.dataType=TARGET.dataType)
+		WHEN MATCHED THEN
+		 	UPDATE SET TARGET.DATAVALUE= SOURCE.DATAVALUE,
+		 	TARGET.DCHECK=SOURCE.DCHECK,
+		 	TARGET.VOLUME=SOURCE.VOLUME,
+		 	TARGET.DVOLUME=SOURCE.DVOLUME,
+		 	TARGET.DATAFLAG=SOURCE.DATAFLAG,
+		 	TARGET.FDATATIME=SOURCE.FDATATIME,
+		 	TARGET.DCHROMA=SOURCE.DCHROMA,
+		 	TARGET.qn=SOURCE.qn,
+		 	TARGET.UPDATETIME=SOURCE.UPDATETIME
+		WHEN NOT MATCHED THEN 
+    		INSERT (POINTCODE, POLLUTECODE, FDATATIME, DATATIME, DATAVALUE, DCHECK, DCHROMA, VOLUME, DVOLUME,DATAFLAG, qn, UPDATETIME, dataType, dataStatus) 
+    		VALUES (SOURCE.POINTCODE, SOURCE.POLLUTECODE, SOURCE.FDATATIME, SOURCE.DATATIME,  SOURCE.DATAVALUE, SOURCE.DCHECK, 
+    		     SOURCE.DCHROMA, SOURCE.VOLUME, SOURCE.DVOLUME,SOURCE.DATAFLAG, SOURCE.qn, SOURCE.UPDATETIME, SOURCE.dataType, SOURCE.dataStatus)
+	</insert>
+	
+	
+	<insert id="insert20656ByBatch" parameterType="java.util.List">
+		MERGE INTO T_ENV_MONI_RIV_DATAAUDIT  TARGET USING(
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			select
+			#{item.pointCode,jdbcType=INTEGER} as POINTCODE,
+			#{item.ParamID,jdbcType=VARCHAR} as POLLUTECODE,
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss') as DATATIME,
+			#{item.StandardValue,jdbcType=VARCHAR} as DATAVALUE,
+			#{item.Check,jdbcType=DOUBLE} as DCHECK,
+            #{item.SpanValue,jdbcType=DOUBLE} as SpanValue,
+			#{item.Flag,jdbcType=VARCHAR} as DATAFLAG,
+			#{item.qn,jdbcType=VARCHAR} as qn,
+			to_date(#{item.updateTime},'yyyy-mm-dd hh24:mi:ss') as UPDATETIME,
+			<choose><when test="item.auditTime!=null and item.auditTime!=''">to_date(#{item.auditTime},'yyyy-mm-dd hh24:mi:ss') as auditTime,</when><otherwise>null,</otherwise></choose>
+			#{item.dataType,jdbcType=INTEGER} as dataType,
+			#{item.dataStatus,jdbcType=INTEGER} as dataStatus
+			from dual
+		</foreach>
+		)  SOURCE
+		ON  (SOURCE.POINTCODE=TARGET.POINTCODE AND SOURCE.POLLUTECODE=TARGET.POLLUTECODE 
+		     AND SOURCE.DATATIME=TARGET.DATATIME AND SOURCE.dataType=TARGET.dataType)
+		WHEN MATCHED THEN
+		 	UPDATE SET TARGET.DATAVALUE= SOURCE.DATAVALUE,
+		 	TARGET.DCHECK=SOURCE.DCHECK,
+		 	TARGET.SpanValue=SOURCE.SpanValue,
+            TARGET.dataStatus=SOURCE.dataStatus,
+		 	TARGET.DATAFLAG=SOURCE.DATAFLAG,
+		 	TARGET.qn=SOURCE.qn,
+		 	TARGET.auditTime=SOURCE.auditTime,
+		 	TARGET.UPDATETIME=SOURCE.UPDATETIME
+		WHEN NOT MATCHED THEN 
+    		INSERT (POINTCODE, POLLUTECODE, DATATIME, DATAVALUE, DCHECK, SpanValue, DATAFLAG, qn, UPDATETIME, auditTime, dataType, dataStatus) 
+    		VALUES (SOURCE.POINTCODE, SOURCE.POLLUTECODE, SOURCE.DATATIME, SOURCE.DATAVALUE, SOURCE.DCHECK, SOURCE.SpanValue, 
+    		        SOURCE.DATAFLAG, SOURCE.qn, SOURCE.UPDATETIME, SOURCE.auditTime, SOURCE.dataType, SOURCE.dataStatus)
+	</insert>
+	
+	
+	<delete id="delete2063ByBatch"  parameterType="java.util.Map">
+	
+	    delete   from   T_ENV_MONI_RIV_RCYLDATA   
+	    
+	    where   
+	    datastatus=1 and  datatype=1 
+        <if test="dataTime != null and dataTime != ''">
+			AND to_char(datatime,'yyyy-mm')=#{dataTime}
+		</if>
+		<if test="pointCode != null and pointCode != ''">
+			AND pointcode=#{pointCode}
+		</if>
+	
+	</delete>
+
+</mapper>

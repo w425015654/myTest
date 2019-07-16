@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dps.dao.LostDataDao">
+
+	<select id="queryLostData" resultType="com.zeei.das.dps.vo.LostDataRecordVO">
+		SELECT DISTINCT
+			POINTCODE AS pointCode,
+			MN,
+			DATATYPE AS CN,
+			DATATIME AS dataTime,
+			INTERVAL
+		FROM
+		T_BAS_DATALOST
+		<where>
+			<if test="beginTime!=null">
+				AND DATATIME &gt;=to_date('${beginTime}','yyyy-mm-dd hh24:mi:ss')
+			</if>
+			<if test="endTime!=null">
+				AND DATATIME &lt;to_date('${endTime}','yyyy-mm-dd hh24:mi:ss')
+			</if>
+		</where>
+		ORDER BY pointCode,MN,datatime ASC
+	</select>
+
+	<insert id="insertDataTimeBatch" parameterType="java.util.List">
+	   merge into t_bas_datatime target
+	   using (
+	   <foreach collection="list" item="item" index="index" separator="union all">
+              select
+        		#{item.pointCode,jdbcType = INTEGER} as pointCode, 
+            	#{item.rDataTime,jdbcType = TIMESTAMP} as rDataTime,
+             	#{item.mDataTime,jdbcType = TIMESTAMP} as mDataTime, 
+             	#{item.hDataTime,jdbcType = TIMESTAMP} as hDataTime, 
+            	#{item.dDataTime,jdbcType = TIMESTAMP} as dDataTime, 
+             	#{item.upTime,jdbcType = TIMESTAMP}  as upTime            
+             from dual
+       </foreach>
+	   ) SOURCE ON (TARGET.POINTCODE=SOURCE.POINTCODE)
+	   WHEN MATCHED THEN
+	   UPDATE SET 
+	   TARGET.RDATATIME=SOURCE.RDATATIME, 
+	   TARGET.MDATATIME=SOURCE.MDATATIME,
+	   TARGET.HDATATIME=SOURCE.HDATATIME, 
+	   TARGET.DDATATIME=SOURCE.DDATATIME, 
+	   TARGET.UPTIME=SOURCE.UPTIME
+	   WHEN NOT MATCHED THEN
+	   INSERT (POINTCODE, RDATATIME,  MDATATIME, HDATATIME,   DDATATIME, UPTIME) 
+	   VALUES(SOURCE.POINTCODE, SOURCE.RDATATIME, SOURCE.MDATATIME,SOURCE.HDATATIME, SOURCE.DDATATIME, SOURCE.UPTIME) 
+	   
+	</insert>
+
+	<insert id="insertLostDataBatch" parameterType="java.util.List">
+		insert INTO T_BAS_DATALOST (
+		POINTCODE,
+		MN,
+		DATATYPE,
+		DATATIME,
+		INTERVAL,
+		PRETIME
+		)
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			(
+			SELECT 
+				#{item.pointCode} as pointCode,
+				#{item.MN} as MN,
+				#{item.CN} as CN,
+				#{item.dataTime} as dataTime,
+				#{item.interval} as interval,
+				#{item.preDataTime} as preDataTime
+			from dual
+			)
+		</foreach>
+	</insert>
+
+	<delete id="deleteLostData" parameterType="com.zeei.das.dps.vo.LostDataRecordVO">
+		DELETE FROM T_BAS_DATALOST WHERE POINTCODE = #{pointCode} AND DATATYPE = #{CN}	AND DATATIME =#{dataTime}
+	</delete>
+	
+	<insert id="insertLostDataCmdBatch" parameterType="java.util.List">
+		INSERT INTO T_BAS_COMPDATA_REC (
+		  QN,
+		  STDPOINTCODE,
+		  MSG,
+		  DATATIME,
+		  CMDSTATUS,
+		  REMARK
+		) 		
+		<foreach collection="list" item="item" index="index"
+			separator="union all">
+			(
+			select 
+				#{item.QN},
+				#{item.MN},
+				#{item.msg},
+				#{item.dataTime},
+				#{item.cmdStatus},
+				#{item.remark}
+			from dual
+			)
+		</foreach>
+	</insert>
+	
+	
+	<select id="querySuppData" resultType="com.zeei.das.dps.vo.T20x1VO">
+		SELECT *
+		FROM
+		${tableName}
+		<where>
+		    <if test="pointCode!=null">
+				AND  POINTCODE = #{pointCode}
+			</if>
+			<if test="polluters!=null">
+			    AND  POLLUTECODE  IN
+				<foreach collection="polluters" separator="," item="id" open="(" close=")">
+			        #{id} 
+		        </foreach>
+			</if>
+			<if test="beginTime!=null">
+				AND DATATIME &gt;= to_date(#{beginTime},'yyyy-mm-dd hh24:mi:ss')
+			</if>
+			<if test="endTime!=null">
+				AND DATATIME &lt;= to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')
+			</if>
+		</where>
+		
+	</select>
+	
+	<update id="updateDoubtfulHH" parameterType="java.util.List">
+	
+        <foreach collection="datas" item="bean" index="index" open="" close="" separator=";">
+            UPDATE  T_ENV_MONI_AIR_DATAHH
+            <set>
+                DOUBTFUL = 1
+            </set>
+            <where>
+            POINTCODE = #{bean.pointCode}
+            AND  POLLUTECODE = #{bean.polluteCode}
+		    AND  DATATIME =  #{bean.dataTime}
+            </where>
+        </foreach>
+
+    </update>
+
+    <select id="queryHhCycletime" resultType="com.zeei.das.dps.vo.PolluteVO">
+			select  pointCode,polluteCode,max(hhcycletime) as hhcycletime  
+			 from   V_BAS_STATIONPOLLINFO
+			 where 1=1
+			 <if test="pointCode!=null">
+				AND  POINTCODE = #{pointCode}
+			</if>
+           group by  pointCode,polluteCode 
+	</select>
+
+</mapper>

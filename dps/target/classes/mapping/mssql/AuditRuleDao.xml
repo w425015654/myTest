@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dps.dao.AuditRuleDAO">
+
+	<select id="queryZeroAuditRule" resultType="com.zeei.das.dps.vo.ZeroNegativeVO">
+		SELECT 
+		  d.RULEID AS ruleId,
+		  POLLUTECODE AS polluteCode,
+		  SMAXVALUE AS smaxValue,
+		  SMINVALUE AS sminValue,
+		  [VALUE] AS auditValue,
+		  STDPOINTCODE AS MN,	
+		  v.POINTCODE AS PointCode,	
+		  r.RULECODE AS ruleCode 
+		FROM
+		  T_DIC_AUDIT_RULE r,
+		  T_DIC_AUDIT_RULE_DETAIL d,
+		  T_DIC_AUDIT_RULE_STATION p,
+		  T_PS_BAS_POINTLIST v 
+		WHERE r.RULEID = d.RULEID 
+		  AND ENABLED = 1 
+		  AND r.RULEID = p.RULEID 
+		  AND v.POINTCODE = p.POINTCODE	    
+	</select>
+	
+	<select id="getZeroAuditRuleByMN"	resultType="com.zeei.das.dps.vo.ZeroNegativeVO">
+		SELECT 
+			  d.RULEID AS ruleId,
+			  POLLUTECODE AS polluteCode,
+			  SMAXVALUE AS smaxValue,
+			  SMINVALUE AS sminValue,
+			  [VALUE] AS auditValue,
+			  STDPOINTCODE AS MN,
+			  v.POINTCODE AS PointCode,
+			  r.RULECODE AS ruleCode 
+			FROM
+			  T_DIC_AUDIT_RULE r,
+			  T_DIC_AUDIT_RULE_DETAIL d,
+			  T_DIC_AUDIT_RULE_STATION p,
+			  T_PS_BAS_POINTLIST v 
+			WHERE r.RULEID = d.RULEID 
+			  AND ENABLED = 1 
+			  AND r.RULEID = p.RULEID 
+			  AND v.POINTCODE = p.POINTCODE	
+		<where>			
+			<if test="pointCode != null and pointCode != ''">
+				AND p.pointCode=#{pointCode}
+			</if>		
+		</where>
+	</select>
+	
+	<select id="queryDataFlagAuditRule" resultType="com.zeei.das.dps.vo.DataFlagAuditVO">
+			SELECT 
+			  a.RULEID,
+			  a.RULENAME,
+			  a.RULECODE AS ruleCode,
+			  datatype,
+			  b.dataflag,
+			  d.pointcode,
+			  STDPOINTCODE AS MN,
+			  (case when isvalid='' or isvalid is null then 0 else isvalid end) isvalid 
+			FROM
+			  T_DIC_AUDIT_RULE a,
+			  T_DIC_REPORT_DATAIDEN b,
+			  T_DIC_AUTOAUDIT_RULE c,
+			  T_DIC_AUDIT_RULE_STATION d,
+			  T_PS_BAS_POINTLIST v 
+			WHERE a.RULEID = c.RULEID 
+			  AND b.DATAFLAG = c.DATAFLAG 
+			  AND a.RULEID = d.RULEID 
+			  AND a.ENABLED = 1 
+			  AND v.POINTCODE = d.POINTCODE   
+	</select>
+	
+	<select id="queryPollute" resultType="com.zeei.das.dps.vo.PolluteVO">
+			SELECT DISTINCT 
+			  pollutecode,
+			  pollutename,
+			  SYSTEMTYPE st,
+			  numprecision
+			FROM
+			  T_DIC_STDPOLLCODE,
+			  T_DIC_SYSTYPE_POLLCODE_REL 
+	</select>
+	
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.aas.dao.AlarmRuleDao">
+
+	<select id="queryAlarmRule" resultType="com.zeei.das.aas.vo.AlarmRuleVO">
+		SELECT 
+		  r.POINTCODE AS pointCode,
+		  r.RULEEXPRESSIONS AS formula,
+		  r.POLLUTECODE AS polluteCode,
+		  r.ALARMCODE AS alarmCode,
+		  r.ALERTTYPE AS alarmType,
+		  NVL(r.RULEDUR, 0) AS durTime,
+		  dataType,
+		  site.STDPOINTCODE MN,
+		  r.ISEFFECT as isEffect,
+		  r.ISGENALARM as isGenAlarm
+		FROM
+		  V_BAS_ALERTRULE r 
+		  LEFT JOIN T_PS_BAS_POINTLIST site 
+		    ON r.pointCode = site.pointCode 
+		WHERE r.RULEEXPRESSIONS IS NOT NULL 
+		  AND site.STDPOINTCODE IS NOT NULL 
+		  AND site.status IN (0, 1) 
+		  AND pollutecode IS NOT NULL	    
+	</select>
+	
+	<select id="queryCustomAlarmRule" resultType="com.zeei.das.aas.vo.AlarmRuleVO">
+		SELECT 
+		  r.RULEID,
+		  r.RULEEXPRESSIONS AS formula,
+		  r.ALARMCODE AS alarmCode,
+		  NVL(r.DURATION, 0) AS durTime,
+		  v.STDPOINTCODE MN,
+		  v.pointCode,
+		  d.ALMTYPEID
+		FROM
+		  T_BAS_ALM_RULE_CONFIG r,
+		  T_BAS_ALM_RULE_STATION s,
+		  T_PS_BAS_POINTLIST v ,
+		  T_BAS_ALM_DEF d
+		WHERE r.RULEID = s.RULEID 
+		  AND v.POINTCODE = s.POINTCODE
+		  AND r.ALARMCODE = d.ALARMCODE  
+	</select>
+	
+	<select id="getAlarmRule"	resultType="com.zeei.das.aas.vo.AlarmRuleVO">
+		SELECT 
+		  r.POINTCODE AS pointCode,
+		  r.RULEEXPRESSIONS AS formula,
+		  r.POLLUTECODE AS polluteCode,
+		  r.ALARMCODE AS alarmCode,
+		  r.ALERTTYPE AS alarmType,
+		  NVL(r.RULEDUR, 0) AS durTime,
+		  dataType,
+		  site.STDPOINTCODE MN,
+		  r.ISEFFECT as isEffect,
+		  r.ISGENALARM as isGenAlarm
+		FROM
+		  V_BAS_ALERTRULE r 
+		  LEFT JOIN T_PS_BAS_POINTLIST site 
+		    ON r.pointCode = site.pointCode 
+		WHERE r.RULEEXPRESSIONS IS NOT NULL 
+		  AND site.STDPOINTCODE IS NOT NULL 
+		  AND site.status IN (0, 1) 
+		  AND pollutecode IS NOT NULL
+		<if test="MN != null and MN != ''">
+				AND site.STDPOINTCODE=#{MN}
+		</if>		
+	</select>
+	
+	<select id="queryAlarm" resultType="com.zeei.das.aas.vo.AlarmInfoVO">
+		SELECT 
+		  POINTCODE AS pointCode,
+		  POLLUTECODE AS polluteCode,
+		  ALARMCODE AS alarmCode,
+		  STARTTIME AS startTime,
+		  ENDTIME AS endTime,
+		  ALARMVALUE AS alarmValue,
+		  1 AS isStorage,
+		  dataType
+		FROM
+		  T_BAS_ALMINFO 
+		WHERE ENDTIME IS NULL	    
+	</select>
+
+	<select id="queryStation" resultType="com.zeei.das.aas.vo.StationVO">
+		SELECT 
+		  P.POINTCODE pointCode,
+		  P.POINTNAME pointName,
+		  STDPOINTCODE AS MN,
+		  RTCYCLETIME AS rCycle,
+		  MICYCLETIME AS mInterval,
+		  RTCYCLETIME AS rInterval,
+		  regionCode,
+		  SYSTEMTYPE AS ST,
+		  STATUS AS onlineStatus,
+		   D.datatime AS heartTime
+		FROM
+		  T_PS_BAS_POINTLIST  P 
+		  LEFT JOIN (SELECT pointcode,MAX(datatime) datatime FROM T_BAS_DATALATEST GROUP BY pointcode) D 
+		    ON P.POINTCODE = D.POINTCODE
+		where STATUS IN (0, 1)
+	</select>
+
+
+	<select id="getStation" resultType="com.zeei.das.aas.vo.StationVO">
+		SELECT 
+		  P.POINTCODE pointCode,
+		  STDPOINTCODE AS MN,
+		  RTCYCLETIME AS rCycle,
+		  regionCode,
+		  SYSTEMTYPE AS ST,
+		  STATUS AS onlineStatus,
+		   D.datatime AS heartTime
+		FROM
+		  T_PS_BAS_POINTLIST  P 
+		  LEFT JOIN (SELECT pointcode,MAX(datatime) datatime FROM T_BAS_DATALATEST GROUP BY pointcode) D 
+		    on P.POINTCODE = D.POINTCODE
+		WHERE STATUS IN (0, 1)		
+		<if test="MN != null and MN != ''">
+			AND STDPOINTCODE=#{MN}
+		</if>
+		
+	</select>	
+	
+	<select id="queryRegionStation" resultType="com.zeei.das.aas.vo.RegionDataVO">
+		SELECT 
+		  regionCode,
+		  COUNT(1) AS total 
+		FROM
+		  T_PS_BAS_POINTLIST 
+		WHERE regionCode IS NOT NULL AND STATUS IN (0, 1)
+		AND SYSTEMTYPE=22
+		GROUP BY regioncode 	
+	</select>
+
+
+	<select id="getRegionStation" resultType="com.zeei.das.aas.vo.RegionDataVO">
+		SELECT 
+		  regionCode,
+		  COUNT(1) AS total 
+		FROM
+		  T_PS_BAS_POINTLIST 
+		WHERE regionCode IS NOT NULL AND STATUS IN (0, 1)
+		AND SYSTEMTYPE=22
+		AND regionCode=#{regionCode}
+		GROUP BY regioncode	
+	</select>
+	
+	<select id="queryStatusMapAlarmCode" resultType="java.util.HashMap">
+		SELECT 
+		  ALARMCODE AS alarmCode,
+		  GENERALCODE AS statusCode 
+		FROM
+		  T_BAS_ALARMSTATUSCODE 	
+	</select>
+	
+	<select id="querySTInfo" resultType="com.zeei.das.aas.vo.STVO">
+		SELECT 
+		  systemtype AS ST,
+		  pname AS tableName 
+		FROM
+		  T_DIC_POINTSYSTYPE 
+		WHERE pname IS NOT NULL
+	</select>
+	
+	<select id="queryExceptionTime" resultType="com.zeei.das.aas.vo.ExcludeTimeVO">
+		SELECT
+		p.POINTCODE,
+		STARTDATE AS bDateTime,
+		ENDDATE AS eDateTime
+		FROM
+		T_PS_PMS_EXCEPTION_APP
+		e,
+		T_PS_PMS_EXCEPTION_APP_PLIST p
+		WHERE e.APPID = p.APPID
+		AND e.APPLY_STATUS = 1
+		ORDER BY STARTDATE ASC,ENDDATE ASC
+	</select>
+
+	<select id="queryRegularStopTime" resultType="com.zeei.das.aas.vo.ExcludeTimeVO">
+		SELECT
+		pointCode,
+		WEEK,
+	    NVL(to_char(STARTTIME,'hh24:mi:ss'), '00:00:00') AS startTime,
+        NVL(to_char(ENDTIME,'hh24:mi:ss'), '23:59:59') AS endTime
+		FROM
+		T_PS_PMS_REGULARSTOPTIME where STARTTIME is not null and ENDTIME is not null
+		ORDER BY STARTTIME ASC,ENDTIME ASC
+	</select>
+	
+			
+	<select id="queryDrainageTime" resultType="String">
+		SELECT EMISSIONPERIOD  FROM T_PS_BAS_ENTERMANAGE  a WHERE pscode=#{psCode} AND YEARMN=#{yearMN}
+	</select>
+	
+	<select id="queryUpsideAlmRule" resultType="com.zeei.das.aas.vo.STVO">
+		select s.POINTCODE from T_BAS_ALM_RULE_CONFIG c
+		join T_BAS_ALM_RULE_STATION s on s.RULEID = c.RULEID
+		where c.ALARMCODE = '90093'
+	</select>
+	
+	<select id="queryAreaExceedAlmRule" resultType="com.zeei.das.aas.vo.STVO">
+		select s.POINTCODE from T_BAS_ALM_RULE_CONFIG c
+		join T_BAS_ALM_RULE_STATION s on s.RULEID = c.RULEID
+		where c.ALARMCODE = '90094'
+	</select>
+	
+</mapper>

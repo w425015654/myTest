@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias alias="PointSystemVO" type="com.zeei.das.dps.vo.PointSystemVO" />
+		<typeAlias alias="PointSiteVO" type="com.zeei.das.dps.vo.PointSiteVO" />
+		<typeAlias alias="T20x1VO" type="com.zeei.das.dps.vo.T20x1VO" />
+		<typeAlias alias="NewPointCode" type="com.zeei.das.dps.vo.NewPointCode" />
+	</typeAliases>
+</configuration>
+

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dss.dao.AlarmDao">
+
+	<select id="queryAlarm" resultType="com.zeei.das.dss.vo.AlarmVO">
+		select A.pointCode,
+	       A.alarmCode,
+	       dataType,
+	       starttime as beginTime,
+	       NVL(endtime, sysdate) as endTime
+	  from T_BAS_ALMINFO A, T_BAS_ALM_DEF D
+		WHERE A.ALARMCODE = D.ALARMCODE 
+		<if test="pointCode!=null and pointCode!=''">
+			AND pointCode=#{pointCode}
+		</if>
+		<if test="bTime!=null and eTime !=null" >
+			AND <![CDATA[NOT (starttime > #{eTime} OR NVL(endtime,sysdate) < #{bTime}) ]]> 
+		</if>
+		<if test="null != alarmCodes and alarmCodes.size > 0">
+			AND ALMTYPEID IN
+			<foreach collection="alarmCodes" index="index" item="code"
+				open="(" separator="," close=")">
+				#{code}
+			</foreach>
+		</if>
+		ORDER BY A.alarmcode ASC, starttime ASC,NVL(endtime,sysdate) ASC
+	</select>
+	
+	<select id="queryAlarmByOutage" resultType="com.zeei.das.dss.vo.AlarmVO">
+		select A.pointCode,
+		       A.alarmCode,
+		       dataType,
+		       starttime as beginTime,
+		       NVL(endtime, sysdate) as endTime
+		  from T_BAS_ALMINFO A, T_BAS_ALM_DEF D
+		 WHERE A.ALARMCODE = D.ALARMCODE
+		   AND ALMCLASSIFY = 'solveResult3'
+		<if test="pointCode!=null and pointCode!=''">
+			AND pointCode=#{pointCode}
+		</if>
+		<if test="bTime!=null and eTime !=null" >
+			AND <![CDATA[NOT (starttime > #{eTime} OR NVL(endtime,sysdate) < #{bTime}) ]]> 
+		</if>		
+		ORDER BY A.alarmcode ASC, starttime ASC,NVL(endtime,sysdate) ASC
+	</select>
+
+	<select id="queryExceptionTime" resultType="com.zeei.das.dss.vo.AlarmVO">
+		SELECT p.POINTCODE, STARTDATE AS beginTime, ENDDATE AS endTime
+		  FROM T_PS_PMS_EXCEPTION_APP e, T_PS_PMS_EXCEPTION_APP_PLIST p
+		 WHERE e.APPID = p.APPID
+		   AND APPLY_STATUS = 1
+		<if test="pointCode!=null and pointCode!=''">
+			AND p.pointCode=#{pointCode}
+		</if>
+		<if test="bTime!=null and eTime !=null" >
+			AND <![CDATA[NOT (STARTDATE > #{eTime} OR NVL(ENDDATE,sysdate) < #{bTime}) ]]> 
+		</if>
+		ORDER BY STARTDATE ASC,ENDDATE ASC
+	</select>
+
+	<select id="queryRegularStopTime" resultType="com.zeei.das.dss.vo.RegularStopTimeVO">
+		SELECT
+		pointCode,
+		WEEK,
+		NVL(STARTTIME,'00:00:00') AS startTime,
+		NVL(ENDTIME,'23:59:59') AS endTime
+		FROM
+		T_PS_PMS_REGULARSTOPTIME
+		WHERE 1=1
+		<if test="pointCode!=null and pointCode!=''">
+			AND pointCode=#{pointCode}
+		</if>
+		<if test="week!=null">
+			AND WEEK=#{week}
+		</if>
+		ORDER BY STARTTIME ASC,ENDTIME ASC
+	</select>
+	
+	<select id="queryO38std" resultType="com.zeei.das.dss.vo.O38stdVO">
+		SELECT 
+		  pointCode,polluteCode,
+		  smaxvalue AS stdValue 
+		FROM
+		  T_DIC_POLLSTD_DETAIL d,
+		  T_PS_BAS_POINTLIST s 
+		WHERE d.scode = s.scode 
+		  AND SYSTEMTYPE=22
+		  AND pollutecode in ('a05024','a83006')
+		  AND ttype = 'timeType038' 
+	</select>
+
+</mapper>

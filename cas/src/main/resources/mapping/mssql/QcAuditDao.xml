@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.cas.dao.QcAuditDao">
+
+
+      <insert id="insertHourAuditDatas" >	
+		    MERGE INTO T_ENV_MONI_RIV_HOURAUDIT AS T
+			USING (VALUES
+			<foreach collection="lists" item="item" index="index" separator="," >
+				(
+					 ${item.pointCode},
+					'${item.polluteCode}',
+					 convert(dateTime, '${item.dataTime}',120),
+					 convert(dateTime, '${item.auditTime}',120),
+					 convert(dateTime, '${item.oriTime}',120),
+					 <choose><when test="item.dataValue!=null">${item.dataValue},</when><otherwise>null,</otherwise></choose>
+					 <choose><when test="item.dataType!=null">${item.dataType},</when><otherwise>null,</otherwise></choose>
+					 convert(dateTime, '${item.updateTime}',120),
+					 <choose><when test="item.dataFlag!=null">'${item.dataFlag}',</when><otherwise>null,</otherwise></choose>
+					 <choose><when test="item.qn!=null">'${item.qn}',</when><otherwise>null,</otherwise></choose>
+					 <choose><when test="item.dataStatus!=null">'${item.dataStatus}'</when><otherwise>null</otherwise></choose>
+				)
+			</foreach>
+			) AS S (
+			         POINTCODE,
+			         POLLUTECODE, 
+			         DATATIME,
+			         AUDITTIME, 
+			         ORITIME, 
+			         DATAVALUE, 
+			         DATATYPE, 
+			         UPDATETIME,
+			         DATAFLAG,
+			         qn,
+			         DATASTATUS)
+			ON  S.POINTCODE=T.POINTCODE AND S.POLLUTECODE=T.POLLUTECODE AND S.DATATIME=T.DATATIME AND S.DATATYPE=T.DATATYPE 
+			WHEN MATCHED THEN
+			 	UPDATE SET 
+			 	    T.AUDITTIME= S.AUDITTIME,
+			 	    T.ORITIME= S.ORITIME,
+			 	    T.DATAVALUE=S.DATAVALUE,
+			 	    T.UPDATETIME=S.UPDATETIME,
+			 	    T.DATAFLAG=S.DATAFLAG,
+			 	    T.qn=S.qn,
+			 	    T.DATASTATUS=S.DATASTATUS
+			WHEN NOT MATCHED  THEN 
+		   		INSERT (
+		   		      POINTCODE,
+			          POLLUTECODE, 
+			          DATATIME,
+			          AUDITTIME, 
+			          ORITIME, 
+			          DATAVALUE, 
+			          DATATYPE, 
+			          UPDATETIME,
+			          DATAFLAG,
+			          qn,
+			          DATASTATUS) 
+		   		VALUES (
+		   		       POINTCODE,
+			           POLLUTECODE, 
+			           DATATIME,
+			           AUDITTIME, 
+			           ORITIME, 
+			           DATAVALUE, 
+			           DATATYPE, 
+			           UPDATETIME,
+			           DATAFLAG,
+			           qn,
+			           DATASTATUS);
+	  </insert>
+
+
+     <select id="queryRivHourData" resultType="com.zeei.das.cas.vo.Msg2061VO">
+		select 
+		  d.POINTCODE,
+		  d.POLLUTECODE,
+          d.dataTime,
+          d.dataValue,
+          d.dataFlag 
+		from
+		  T_ENV_MONI_RIV_DATAHH d
+		WHERE  1=1 
+		<if test="pointCode!=null">
+			AND d.pointCode=#{pointCode}
+		</if>
+		<if test="beginTime!=null">
+			AND d.DATATIME  &gt;= #{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND d.DATATIME &lt;= #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+
+
+    <select id="query2062Datas" resultType="com.zeei.das.cas.vo.Msg2062VO">
+		select 
+		  d.POINTCODE AS pointCode,
+		  d.POLLUTECODE AS ParamID,
+          d.DATATIME AS dataTime,
+          d.DATAVALUE AS StandardValue,
+          d.DCHECK AS 'Check',
+          d.VOLUME AS Volume,
+          d.DVOLUME AS DVolume,
+          d.DATAFLAG AS Flag 
+		from
+		  T_ENV_MONI_RIV_CHKDATA d
+		WHERE  DATATYPE = 0
+		<if test="pointCode!=null">
+			AND d.pointCode=#{pointCode}
+		</if>
+		<if test="beginTime!=null">
+			AND d.DATATIME  &gt;= #{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND d.DATATIME &lt;= #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+	
+	
+	<select id="query2063Datas" resultType="com.zeei.das.cas.vo.Msg2063VO">
+		select 
+		  d.POINTCODE AS pointCode, 
+		  d.POLLUTECODE AS ParamID, 
+		  d.FDATATIME AS waterTime,  
+		  d.DATATIME AS dataTime, 
+		  d.DATAVALUE AS Water, 
+		  d.DCHECK AS 'Check', 
+		  d.DCHROMA AS Chroma, 
+		  d.VOLUME AS Volume, 
+		  d.DVOLUME AS DVolume,
+		  d.DATAFLAG AS Flag
+		from
+		  T_ENV_MONI_RIV_RCYLDATA d
+		WHERE  DATATYPE = 0
+		<if test="pointCode!=null">
+			AND d.pointCode=#{pointCode}
+		</if>
+		<if test="beginTime!=null">
+			AND d.DATATIME  &gt;= #{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND d.DATATIME &lt;= #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+	
+	
+	<select id="query20656Datas" resultType="com.zeei.das.cas.vo.Msg20656VO">
+		select 
+		  d.POINTCODE AS pointCode, 
+		  d.POLLUTECODE AS ParamID, 
+		  d.DATATIME AS dataTime, 
+		  d.DATAVALUE AS StandardValue, 
+		  d.SPANVALUE AS SpanValue, 
+		  d.DCHECK AS 'Check', 
+		  d.DATAFLAG AS Flag
+		from
+		  T_ENV_MONI_RIV_DATAAUDIT d
+		WHERE  1=1
+		<if test="dataType!=null">
+			AND d.dataType=#{dataType}
+		</if>
+		<if test="pointCode!=null">
+			AND d.pointCode=#{pointCode}
+		</if>
+		<if test="beginTime!=null">
+			AND d.DATATIME  &gt;= #{beginTime}
+		</if>
+		<if test="endTime!=null">
+			AND d.DATATIME &lt;= #{endTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+
+
+    <update id="updateRivHhFlag" >		
+		
+			UPDATE  T_ENV_MONI_RIV_DATAHH SET 
+				DATAFLAG = #{QcFlag},
+				ISVALIDED=0
+			WHERE pointCode=#{pointCode}
+			<if test="beginTime!=null">
+			    AND  DATATIME  &gt; #{beginTime}
+			</if>
+			<if test="endTime!=null">
+				AND  DATATIME &lt;= #{endTime}
+			</if>
+			   AND POLLUTECODE IN
+			<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+				close=")">
+				#{polluteCode}
+			</foreach>
+		
+	</update>
+	
+	
+	<select id="queryCheckData" resultType="com.zeei.das.cas.vo.Msg2062VO">
+		select 
+		  d.POINTCODE AS pointCode,
+		  d.POLLUTECODE AS ParamID,
+          d.DATATIME AS dataTime,
+          d.DATAVALUE AS StandardValue
+          
+		from
+		  T_ENV_MONI_RIV_MAUALMONTH d
+		WHERE  DATATYPE = 1
+		<if test="pointCode!=null">
+			AND d.pointCode=#{pointCode}
+		</if>
+		<if test="dataTime!=null">
+			AND d.DATATIME  = #{dataTime}
+		</if>
+		AND d.POLLUTECODE IN
+		<foreach collection="polluteCodes" separator="," item="polluteCode" open="("
+			close=")">
+			#{polluteCode}
+		</foreach>
+	</select>
+	
+	
+	<select id="query20656DataCount" resultType="com.zeei.das.cas.vo.Msg20656VO">
+	
+	    select SUM(CASE
+             WHEN  1=1
+            <if test="beginTime!=null">
+			    AND  auditTime  &gt;= #{beginTime}
+			</if>
+            <if test="endTime!=null">
+				AND  auditTime &lt; #{endTime}
+			</if>
+                   THEN
+		              1
+		             ELSE
+		              0
+		           END) as DATASUM,
+			       DATATYPE,POINTCODE,
+			       max(auditTime) as auditTime
+			  from T_ENV_MONI_RIV_DATAAUDIT
+			 where DATASTATUS = 1 and DATATYPE in (1,2)
+			 GROUP BY POINTCODE,DATATYPE
+	     
+	</select>
+
+</mapper>

@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<models>
+		<model id="cgs">
+			<srvCode>CGS</srvCode>
+			<PORT>9009</PORT>
+			<reportCycle>5</reportCycle>
+			<passbackDays>3</passbackDays>
+		</model>	
+		
+		<model id="pcs">
+			<srvCode>PCS</srvCode>
+			<serverPORT>9010</serverPORT>
+			<clientPORT>9009</clientPORT>
+			<clientIP>127.0.0.1</clientIP>
+			<reportCycle>5</reportCycle>
+		</model>
+		
+		<model id="nds">
+			<srvCode>NDS</srvCode>
+			<reportCycle>5</reportCycle>
+			<mail.smtp.host>smtp.exmail.qq.com</mail.smtp.host>
+			<mail.smtp.port>465</mail.smtp.port>
+			<mail.user>zeei.mailServer@zeei.com.cn</mail.user>
+			<mail.password>Zms2015##</mail.password>
+			<sms.host>http://service.winic.org/sys_port/gateway/index.asp</sms.host>
+			<sms.id>yczhhb-zeei</sms.id>
+			<sms.pwd>zeei2017</sms.pwd>
+		</model>		
+		
+		<model id="lts">
+			<srvCode>LTS</srvCode>
+			<logRoot></logRoot>
+			<reportCycle>5</reportCycle>
+		</model>	
+		
+		<model id="dss">
+			<srvCode>DSS</srvCode>
+			<reportCycle>5</reportCycle>
+			<isCou>0</isCou>
+			<STS>22</STS>
+            <autoReview>1</autoReview>
+            <autoAudit>1</autoAudit>
+            <reviewTime>1</reviewTime>
+            <auditTime>1</auditTime>
+		</model>
+		
+		<model id="dps">
+			<srvCode>DPS</srvCode>
+			<ServiceInstance>RDPS,MDPS,HDPS,DDPS</ServiceInstance>
+			<reportCycle>5</reportCycle>
+			<PullPeriod>60</PullPeriod>
+			<BatchSize>500</BatchSize>
+			<complement>0</complement>
+		</model>	
+		
+		<model id="cas">
+			<srvCode>CAS</srvCode>
+			<reportCycle>5</reportCycle>
+		</model>
+		
+		<model id="aps">
+			<srvCode>APS</srvCode>
+			<reportCycle>5</reportCycle>
+		</model>	
+		
+		<model id="aas">
+			<srvCode>AAS</srvCode>
+			<reportCycle>5</reportCycle>
+			<onlineCycle>5</onlineCycle>
+			<onlineTime>30</onlineTime>
+			<onlineCode>10001</onlineCode>
+			<upsideDownCode>90093</upsideDownCode>
+			<abnormalCode>90094</abnormalCode>
+			<fluctuationCode>90095</fluctuationCode>
+		</model>	
+		
+		<model id="mds">
+			<startModel>service</startModel>
+			<srvCode>MDS</srvCode>
+			<CheckPeriod>5</CheckPeriod>
+			<StartTime>60</StartTime>
+			<cpuAlarmValue>5</cpuAlarmValue><!--CPU剩余告警值 -->
+			<memAlarmValue>2.5</memAlarmValue><!--内存剩余告警值单位G -->
+			<alarmCycle>120</alarmCycle><!--服务器状态监控告警时间间隔单位S -->
+			<memAlarmCount>3</memAlarmCount><!--内存告警超过门限值次数(连续累计次数) -->
+			<cpuAlarmCount>3</cpuAlarmCount><!--CPU告警超过门限值次数(连续累计次数) -->
+		</model>
+	</models>
+
+	<disks>
+		<disk>
+			<driveLetter>C:\</driveLetter>
+			<diskAlarmValue>1024</diskAlarmValue>
+		</disk>
+		<disk>
+			<driveLetter>D:\</driveLetter>
+			<diskAlarmValue>1024</diskAlarmValue>
+		</disk>
+	</disks>
+	
+	<services>
+	
+		<service>
+			<code>CGS</code>
+			<name>ZEEI.CGS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>	
+			<code>AAS</code>
+			<name>ZEEI.AAS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>APS</code>
+			<name>ZEEI.APS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>DPS</code>		
+			<name>ZEEI.DPS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>CAS</code>		
+			<name>ZEEI.CAS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>DSS</code>
+			<name>ZEEI.DSS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>NDS</code>
+			<name>ZEEI.NDS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>LTS</code>
+			<name>ZEEI.LTS.P</name>
+			<threshold>30</threshold>
+		</service>	
+	</services>
+
+
+	<plugins directory="C:/Users/Administrator/Desktop/MQDas_Product/lib">
+		<plugin>
+			<name>cgs</name>
+			<desc>网关服务插件</desc>		
+			<jar>cgs-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>aas</name>
+			<desc>告警服务插件</desc>		
+			<jar>aas-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>aps</name>
+			<desc>告警处理服务插件</desc>		
+			<jar>aps-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>cas</name>
+			<desc>控制代理服务插件</desc>		
+			<jar>cas-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>dps</name>
+			<desc>数据入库服务插件</desc>		
+			<jar>dps-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>lts</name>
+			<desc>日志服务插件</desc>		
+			<jar>lts-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>nds</name>
+			<desc>通知服务插件</desc>		
+			<jar>nds-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>dss</name>
+			<desc>数据统计服务插件</desc>		
+			<jar>dss-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+	</plugins>
+
+</config>

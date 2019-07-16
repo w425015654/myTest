@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.cas.dao.ParamDao">
+
+	<select id="queryParam" resultType="com.zeei.das.cas.vo.ParamVO">
+		SELECT
+		POLLUTECODE AS fid,
+		POLLUTENAME AS fname,
+		POLLCONCUNIT AS unit,
+		POINTCODE AS stationid,
+		SYSTEMTYPE AS sysid,
+		OPC_CHANNELID as channelid
+		FROM
+		V_BAS_STATIONPOLLINFO
+	</select>
+
+	<select id="queryParamByMN" resultType="com.zeei.das.cas.vo.ParamVO">
+		SELECT
+		v_p.POLLUTECODE AS fid,
+		v_p.POLLUTENAME AS fname,
+		v_p.POLLCONCUNIT AS unit,
+		v_p.POINTCODE AS stationid,
+		v_p.SYSTEMTYPE AS
+		sysid,
+		v_p.OPC_CHANNELID as channelid
+		FROM
+		V_BAS_STATIONPOLLINFO v_p,
+		T_PS_BAS_POINTLIST v_s
+		WHERE v_p.POINTCODE = v_s.POINTCODE
+		<if test="MN != null and MN != ''">
+			AND STDPOINTCODE=#{MN}
+		</if>
+	</select>
+
+	<select id="queryParamMapping" resultType="java.util.HashMap">
+		SELECT
+		PARAMID as id,
+		POLLUTECODE as value
+		FROM
+		T_DIC_POLL_TRANS
+	</select>
+
+</mapper>

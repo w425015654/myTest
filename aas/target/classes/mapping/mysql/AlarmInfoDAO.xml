@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.aas.dao.AlarmInfoDAO">
+	<resultMap id="AlarmInfoMap" type="com.zeei.das.aas.vo.AlarmInfoVO">
+		<result column="POINTCODE" property="pointCode" jdbcType="INTEGER" />
+		<result column="ALARMCODE" property="alarmCode" jdbcType="INTEGER" />
+		<result column="POLLUTECODE" property="polluteCode" jdbcType="VARCHAR" />
+		<result column="DATATYPE" property="dataType" jdbcType="VARCHAR" />
+		<result column="STARTTIME" property="startTime" jdbcType="TIMESTAMP" />
+		<result column="ENDTIME" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="ALARMSTATUS" property="alarmStatus" jdbcType="INTEGER" />
+		<result column="ALARMVALUE" property="alarmValue" jdbcType="DOUBLE" />
+		<result column="ISSHIELDING" property="isShielded" jdbcType="INTEGER" />
+		<result column="ISONLINE" property="isOnline" jdbcType="INTEGER" />
+	</resultMap>
+
+<select id="queryAlarmInfoByBsCondition" parameterType="com.zeei.das.aas.vo.AlarmInfoVO"  resultType="com.zeei.das.aas.vo.AlarmInfoVO">
+	   	SELECT 
+		   	POINTCODE, 
+		   	ALARMCODE, 
+		   	POLLUTECODE, 
+		   	STARTTIME , 
+		   	ENDTIME, 
+		   	ALARMSTATUS,
+		   	ALARMVALUE, 
+		   	ISSHIELDING,
+		   	DATATYPE,
+		   	ISONLINE
+	   	FROM T_BAS_ALMINFO
+	    <where>
+		    POINTCODE=#{pointCode} 
+		    AND ALARMCODE=#{alarmCode} 
+		    AND POLLUTECODE=#{polluteCode} 
+		    AND DATATYPE=#{dataType}
+			AND STARTTIME &gt;=#{startTime}
+			AND ENDTIME &lt; #{endTime}
+	    </where>
+	</select>
+	
+	<select id="queryAlarmInfoByCondition" parameterType="com.zeei.das.aas.vo.AlarmInfoVO"
+		resultType="com.zeei.das.aas.vo.AlarmInfoVO">
+		SELECT POINTCODE, ALARMCODE, POLLUTECODE, STARTTIME , ENDTIME,
+		ALARMSTATUS, ALARMVALUE, ISSHIELDING,DATATYPE
+		FROM T_BAS_ALMINFO
+		<where>
+			POINTCODE=#{pointCode} 
+			AND ALARMCODE=#{alarmCode} 
+			AND	POLLUTECODE=#{polluteCode} 
+			AND STARTTIME=#{startTime} 
+			AND	DATATYPE=#{dataType}
+		</where>
+	</select>
+
+	<insert id="insertAlarmInfo" parameterType="com.zeei.das.aas.vo.AlarmInfoVO">
+		INSERT INTO T_BAS_ALMINFO (
+		  POINTCODE,
+		  ALARMCODE,
+		  DATATYPE,
+		  POLLUTECODE,
+		  STARTTIME,
+		  ENDTIME,
+		  ALARMSTATUS,
+		  ALARMVALUE,
+		  ISSHIELDING,
+		  ISONLINE
+		) 
+		values(
+		#{pointCode,jdbcType=INTEGER },
+		#{alarmCode,jdbcType=INTEGER},
+		#{dataType,jdbcType=VARCHAR},
+		#{polluteCode,jdbcType=VARCHAR},
+		#{startTime,jdbcType=TIMESTAMP},
+		#{endTime,jdbcType=TIMESTAMP},
+		#{alarmStatus,jdbcType=INTEGER},
+		#{alarmValue,jdbcType=DOUBLE},
+		#{isShielded,jdbcType=INTEGER},
+		#{isOnline,jdbcType=INTEGER}
+		)
+	</insert>
+
+	<update id="updateAlarmInfo" parameterType="com.zeei.das.aas.vo.AlarmInfoVO">
+		UPDATE T_BAS_ALMINFO
+		SET 			
+			ALARMSTATUS=#{alarmStatus,jdbcType=INTEGER},
+			ENDTIME=#{endTime,jdbcType=TIMESTAMP},
+			ISONLINE=#{isOnline,jdbcType=INTEGER},
+			ISSHIELDING=#{isShielded,jdbcType=INTEGER}		
+		WHERE POINTCODE=#{pointCode} 
+		AND ALARMCODE=#{alarmCode} 
+		AND	POLLUTECODE=#{polluteCode} 
+		AND STARTTIME=#{startTime} 
+		AND	DATATYPE=#{dataType,jdbcType=VARCHAR }
+	</update>
+	
+	<update id="cannelAlarm" parameterType="com.zeei.das.aas.vo.AlarmInfoVO">
+		UPDATE T_BAS_ALMINFO
+		SET 			
+			ALARMSTATUS=4,
+			ENDTIME=#{endTime,jdbcType=TIMESTAMP},
+			ALARMVALUE = #{alarmValue,jdbcType=DOUBLE}		
+		WHERE POINTCODE=#{pointCode} 
+		AND ALARMCODE=#{alarmCode} 
+		AND	POLLUTECODE=#{polluteCode}
+		AND STARTTIME <![CDATA[>=]]> #{startTime}
+		AND STARTTIME <![CDATA[<]]> #{endTime}
+		AND ENDTIME IS NULL
+		AND	DATATYPE=#{dataType,jdbcType=VARCHAR }
+	</update>
+	
+	<delete id="delAlarmInfo" parameterType="com.zeei.das.aas.vo.AlarmInfoVO">
+        DELETE FROM T_BAS_ALMINFO WHERE POINTCODE=#{pointCode} 
+		AND ALARMCODE=#{alarmCode} 
+		AND	POLLUTECODE=#{polluteCode} 
+		AND STARTTIME=#{startTime} 
+		AND	DATATYPE=#{dataType,jdbcType=VARCHAR }
+    </delete>
+
+	<select id="queryExceptionTime" resultType="com.zeei.das.aas.vo.ExcludeTimeVO">
+		SELECT
+		p.POINTCODE,
+		STARTDATE AS bDateTime,
+		ENDDATE AS eDateTime
+		FROM
+		T_PS_PMS_EXCEPTION_APP
+		e,
+		T_PS_PMS_EXCEPTION_APP_PLIST p
+		WHERE e.APPID = p.APPID
+		AND e.APPLY_STATUS = 1 and e.ISSUPPLEMENT=0
+		ORDER BY STARTDATE ASC,ENDDATE ASC
+	</select>
+
+	<select id="queryRegularStopTime" resultType="com.zeei.das.aas.vo.ExcludeTimeVO">
+		SELECT
+		pointCode,
+		`WEEK`,
+		IFNULL(STARTTIME,'00:00:00') AS startTime,
+		IFNULL(ENDTIME,'23:59:59') AS endTime
+		FROM
+		T_PS_PMS_REGULARSTOPTIME
+		ORDER BY STARTTIME ASC,ENDTIME ASC
+	</select>
+
+	<select id="queryAlarmInfo" resultType="com.zeei.das.aas.vo.AlarmInfoVO">
+		SELECT 
+  		  A.POINTCODE,
+		  A.ALARMCODE,
+		  A.POLLUTECODE,
+		  A.DATATYPE,
+		  STARTTIME,
+		  ENDTIME,
+		  ALARMSTATUS,
+		  ALARMVALUE,
+		  ISSHIELDING,
+		  ISONLINE,
+		  ISGENALARM
+		FROM
+		  T_BAS_ALMINFO A,
+		  T_BAS_ALM_RULE_INFO R 
+		WHERE A.ALARMCODE = R.ALARMCODE 
+		  AND R.ISEFFECT = 1
+		  AND A.DATATYPE = R.DATATYPE
+		  AND ENDTIME IS NOT NULL
+		  AND <![CDATA[NOT (starttime > #{endTime} OR IFNULL(endtime,NOW()) < #{beginTime}) ]]> 
+	</select>
+
+</mapper>

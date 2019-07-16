@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<models>
+		<model id="cgs">
+			<srvCode>CGS</srvCode>
+			<PORT>1211</PORT>
+			<reportCycle>5</reportCycle>
+		</model>
+
+		<model id="nds">
+			<srvCode>NDS</srvCode>
+			<reportCycle>5</reportCycle>
+			<mail.smtp.host>smtp.exmail.qq.com</mail.smtp.host>
+			<mail.smtp.port>465</mail.smtp.port>
+			<mail.user>zeei.mailServer@zeei.com.cn</mail.user>
+			<mail.password>Zms2015##</mail.password>
+			<sms.host>http://service.winic.org/sys_port/gateway/index.asp</sms.host>
+			<sms.id>yczhhb-zeei</sms.id>
+			<sms.pwd>zeei@2015</sms.pwd>
+		</model>
+
+		<model id="lts">
+			<srvCode>LTS</srvCode>
+			<logRoot></logRoot>
+			<reportCycle>5</reportCycle>
+		</model>
+
+		<model id="dss">
+			<srvCode>DSS</srvCode>
+			<reportCycle>5</reportCycle>
+		</model>
+
+		<model id="dps">
+			<srvCode>DPS</srvCode>
+			<ServiceInstance>RDPS,MDPS,HDPS,DDPS</ServiceInstance>
+			<reportCycle>5</reportCycle>
+			<PullPeriod>60</PullPeriod>
+			<BatchSize>500</BatchSize>
+		</model>
+
+		<model id="cas">
+			<srvCode>CAS</srvCode>
+			<reportCycle>5</reportCycle>
+		</model>
+
+		<model id="aps">
+			<srvCode>APS</srvCode>
+			<reportCycle>5</reportCycle>
+		</model>
+
+		<model id="aas">
+			<srvCode>AAS</srvCode>
+			<reportCycle>5</reportCycle>
+			<onlineCycle>5</onlineCycle>
+			<onlineTime>30</onlineTime>
+			<onlineCode>10001</onlineCode>
+			<upsideDownCode>90093</upsideDownCode>
+			<abnormalCode>90094</abnormalCode>
+			<fluctuationCode>90095</fluctuationCode>
+		</model>
+
+		<model id="mds">
+			<startModel>service</startModel>
+			<srvCode>MDS</srvCode>
+			<CheckPeriod>5</CheckPeriod>
+			<StartTime>60</StartTime>
+		</model>
+
+	</models>
+
+	<services>
+
+		<service>
+            <code>AlarmManage</code>
+            <name>AlarmManage</name>
+            <threshold>30</threshold>
+        </service>
+        <service>
+            <code>ControlAgent</code>
+            <name>ControlAgent</name>
+            <threshold>30</threshold>
+        </service>
+        <service>
+            <code>DataManage</code>
+            <name>DataManage</name>
+            <threshold>30</threshold>
+        </service>
+        <service>
+            <code>NoticeManage</code>
+            <name>NoticeManage</name>
+            <threshold>30</threshold>
+        </service>
+	</services>
+
+
+	<plugins directory="C:/Users/Administrator/Desktop/MQDas_Product/lib">
+
+
+	</plugins>
+
+</config>

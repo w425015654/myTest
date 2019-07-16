@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.aps.dao.NoticeRuleDAO">
+		
+	<select id="queryNoticeRule"  resultType="com.zeei.das.aps.vo.NoticeRuleVO">
+ 		SELECT r.ruleId, ruleName, pointCode, alarmCode
+		  FROM T_BAS_ALMNOTICE_RULE r
+		  LEFT JOIN (SELECT ruleId, wm_concat(pointCode) AS pointCode
+		               FROM T_BAS_ALMNOTICE_RULE_POINT_REL r
+		              GROUP BY ruleId) station
+		    ON r.ruleid = station.ruleid
+		  LEFT JOIN (SELECT ruleId, wm_concat(alarmCode) AS alarmCode
+		               FROM (SELECT r.ruleId, alarmcode
+		                       FROM T_BAS_ALM_DEF def, T_BAS_ALMNOTICE_RULE_TYPE_R r
+		                      WHERE def.ALMTYPEID = r.ALARM_TYPE) X
+		              GROUP BY ruleid) alarm
+		    ON r.ruleid = alarm.ruleid
+		 WHERE alarmCode IS NOT NULL
+		   AND pointCode IS NOT NULL
+		   AND rule_status=1
+	</select>
+	
+	<select id="getNoticeRule"  resultType="com.zeei.das.aps.vo.NoticeRuleVO">
+ 		SELECT r.ruleId, ruleName, pointCode, alarmCode
+		  FROM T_BAS_ALMNOTICE_RULE r
+		  LEFT JOIN (SELECT ruleId, wm_concat(pointCode) AS pointCode
+		               FROM T_BAS_ALMNOTICE_RULE_POINT_REL r
+		              GROUP BY ruleId) station
+		    ON r.ruleid = station.ruleid
+		  LEFT JOIN (SELECT ruleId, wm_concat(alarmCode) AS alarmCode
+		               FROM (SELECT r.ruleId, alarmcode
+		                       FROM T_BAS_ALM_DEF def, T_BAS_ALMNOTICE_RULE_TYPE_R r
+		                      WHERE def.ALMTYPEID = r.ALARM_TYPE) X
+		              GROUP BY ruleid) alarm
+		    ON r.ruleid = alarm.ruleid
+		 WHERE alarmCode IS NOT NULL
+		   AND pointCode IS NOT NULL
+		   AND rule_status=1
+	      AND r.ruleId=#{ruleId}	  
+	</select>
+	
+	<select id="queryNoticeRuleUser"  resultType="com.zeei.das.aps.vo.NoticeUserVO">
+	   	SELECT urule.RULEID AS ruleId,
+		       urule.NOTICE_TYPE AS noticeType,
+		       u.USERNAME AS userName,
+		       cast(u.TEL as varchar2(255)) AS phone,
+		       cast(u.EMAIL as varchar2(255)) AS email
+		  FROM T_BAS_ALMNOTICE_RULE_USER_REL urule, T_BAS_USER u
+		 WHERE urule.NOTICE_USERID = u.USERID
+		union all
+		select ruleId,
+		       NOTICE_TYPE as noticeType,
+		       null as userName,
+		       (case notice_type
+		         when 1 then
+		          notice_info
+		         else
+		          null
+		       end) as phone,
+		       (CASE notice_type
+		         when 2 THEN
+		          notice_info
+		         ELSE
+		          NULL
+		       END) email
+		  from T_BAS_ALMNOTICE_RULE_USER_REL
+		 where NOTICE_USERID is null
+	</select>
+	
+	<select id="getNoticeRuleUser"  resultType="com.zeei.das.aps.vo.NoticeUserVO">
+	  SELECT *
+		  FROM (SELECT urule.RULEID AS ruleId,
+		               urule.NOTICE_TYPE AS noticeType,
+		               u.USERNAME AS userName,
+		               cast(u.TEL as varchar2(255)) AS phone,
+		               cast(u.EMAIL as varchar2(255)) AS email
+		          FROM T_BAS_ALMNOTICE_RULE_USER_REL urule, T_BAS_USER u
+		         WHERE urule.NOTICE_USERID = u.USERID
+		        UNION ALL
+		        SELECT ruleId,
+		               NOTICE_TYPE AS noticeType,
+		               NULL AS userName,
+		               (CASE notice_type
+		                 WHEN 1 THEN
+		                  notice_info
+		                 ELSE
+		                  null
+		               END) AS phone,
+		               (CASE notice_type
+		                 WHEN 2 THEN
+		                  notice_info
+		                 ELSE
+		                  null
+		               END) AS email
+		          FROM T_BAS_ALMNOTICE_RULE_USER_REL
+		         WHERE NOTICE_USERID IS NULL) r
+		 WHERE RULEID= #{ruleId}
+	</select>
+	
+	<select id="queryAlarmDef"  resultType="com.zeei.das.aps.vo.AlarmDefVO">
+	   SELECT 
+		  alarmCode,
+		  ALMTYPEID AS alarmType,
+		  DESCRIPTION AS alarmDesc 
+		FROM
+		  T_BAS_ALM_DEF
+	</select>	
+	
+	<select id="queryStations"  resultType="com.zeei.das.aps.vo.StationVO">
+	  SELECT 
+		  pointCode,
+		  stdpointCode AS MN,
+		  systemType AS ST,
+		  pointName 
+		FROM
+		  T_PS_BAS_POINTLIST 
+	</select>
+	
+	<select id="queryPollutes"  resultType="com.zeei.das.aps.vo.PolluteVO">
+	  SELECT 
+		  polluteCode,
+		  polluteName 
+		FROM
+		  T_DIC_STDPOLLCODE 
+	</select>
+	
+</mapper>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dss.dao.StationDao">
+
+	<select id="queryStationCfg" resultType="com.zeei.das.dss.vo.StationVO">
+		SELECT 
+		  STDPOINTCODE AS MN,
+		  POINTCODE AS pointCode,
+		  SYSTEMTYPE AS ST,
+		  MICYCLETIME AS mInterval,
+		  RTCYCLETIME AS rInterval,
+		  REGIONCODE AS areaCode,
+		  ISTIMECAL AS isMsgAck,
+		  ISMSGACK AS isTimecal,
+		  ISSUP212 AS isSup212,
+		  ISVERIFYPASSWD AS isVerifyPasswd,
+		  ISSTATSMI AS isStatsMI,
+		  ISSTATSHH AS isStatsHH,
+		  ISSTATSDD AS isStatsDD,
+		  ISSTATSAQIHH,
+  		  ISSTATSAQIDD,
+		  isrqc,
+		  controlLevel,
+		  a.[LEVEL] AS areaLevel 
+		FROM
+		  T_PS_BAS_POINTLIST p 
+		  LEFT JOIN T_DIC_AREACODE a 
+		    ON a.CODE_REGION = p.REGIONCODE
+		WHERE [STATUS] IN ('0','1')
+	</select>
+
+	<select id="getStationCfg" resultType="com.zeei.das.dss.vo.StationVO">
+		SELECT 
+		  STDPOINTCODE AS MN,
+		  POINTCODE AS pointCode,
+		  SYSTEMTYPE AS ST,
+		  MICYCLETIME AS mInterval,
+		  RTCYCLETIME AS rInterval,
+		  REGIONCODE AS areaCode,
+		  ISTIMECAL AS isMsgAck,
+		  ISMSGACK AS isTimecal,
+		  ISSUP212 AS isSup212,
+		  ISVERIFYPASSWD AS isVerifyPasswd,
+		  ISSTATSMI AS isStatsMI,
+		  ISSTATSHH AS isStatsHH,
+		  ISSTATSDD AS isStatsDD,
+		  ISSTATSAQIHH,
+  		  ISSTATSAQIDD,
+		  isrqc,
+		  a.[LEVEL] AS areaLevel 
+		FROM
+		  T_PS_BAS_POINTLIST p 
+		  LEFT JOIN T_DIC_AREACODE a 
+		    ON a.CODE_REGION = p.REGIONCODE
+		WHERE [STATUS] IN ('0','1')
+		<if test="MN != null and MN != ''">
+			AND STDPOINTCODE=#{MN}
+		</if>
+	</select>
+
+	<select id="queryTableName" resultType="com.zeei.das.dss.vo.SystemTableVO">
+		SELECT
+		SYSTEMTYPE AS ST,
+		TNAMERT AS tableNameRT,
+		TNAMEMI AS tableNameMin,
+		TNAMEHH AS tableNameHH,
+		TNAMEDD AS tableNameDD,
+		TNAMESTAT AS tableNameMY
+		FROM
+		T_DIC_POINTSYSTYPE
+	</select>
+	
+	<select id="queryEmissionFactor" resultType="com.zeei.das.dss.vo.PolluteVO">
+		SELECT 
+		  pollutecode,
+		  polluteName,
+		  polluteClass,
+		  SYSTEMTYPE AS ST 
+		FROM
+		  T_DIC_STDPOLLCODE a 
+		  LEFT JOIN T_DIC_SYSTYPE_POLLCODE_REL b 
+		    ON a.CODECLASS = b.CODECLASS 
+		WHERE POLLUTECLASS IN (
+		    'PolluteClass11',
+		    'PolluteClass12'
+		  )
+	</select>
+		
+	<select id="querySystemTables" resultType="String">
+	   SELECT 
+		  Name 
+		FROM
+		  SysObjects 
+		Where XType = 'U' 
+		ORDER BY Name 
+	</select>
+	
+	<update id="createDataTable" statementType="STATEMENT">
+		CREATE TABLE [dbo].[${table}] (
+		[POINTCODE] int NOT NULL ,
+		[POLLUTECODE] nvarchar(50) COLLATE Chinese_PRC_CI_AS NOT NULL ,
+		[DATATIME] datetime NOT NULL ,
+		[DATAVALUE] float(53) NULL ,
+		[MAXVALUE] float(53) NULL ,
+		[MINVALUE] float(53) NULL ,
+		[AUDITVALUE] float(53) NULL ,
+		[UPDATETIME] datetime NULL ,
+		[DATAFLAG] nvarchar(50) COLLATE Chinese_PRC_CI_AS NULL ,
+		[ORIGINALFLAG] nvarchar(50) COLLATE Chinese_PRC_CI_AS NULL ,
+		[DATASTATUS] char(1) COLLATE Chinese_PRC_CI_AS NULL ,
+		<if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+		[DOUBTFUL] int NULL,
+		[OUTLIERDOUBTFUL] int NULL,
+		</if>
+		[ISVALIDED] int NULL ,
+		CONSTRAINT [${pkname}] PRIMARY KEY ([POINTCODE], [POLLUTECODE], [DATATIME])
+		)		
+	</update>
+		
+	<select  id="createIndex" resultType="String">	  
+	   ${indexSql} 
+	</select>	
+	
+
+</mapper>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dps.dao.T20x1DAO">
+
+	 <insert id="insertT20x1ByBatch" statementType="STATEMENT">
+		MERGE INTO ${table} TARGET
+		USING (
+		<foreach collection="t20x1s" item="item" index="index"
+			separator="union all">
+			select 
+			 ${item.pointCode} as pointCode, 
+			'${item.polluteCode}' as polluteCode, 
+			to_date('${item.dataTime}','yyyy-mm-dd hh24:mi:ss') as dataTime,
+            <choose><when test="item.dataValue!=null">${item.dataValue}</when><otherwise>null</otherwise></choose> as dataValue,
+            <choose><when test="item.maxValue!=null">${item.maxValue}</when><otherwise>null</otherwise></choose> as maxValue,
+            <choose><when test="item.minValue!=null">${item.minValue}</when><otherwise>null</otherwise></choose> as minValue,
+            <choose><when test="item.auditValue!=null">${item.auditValue}</when><otherwise>null</otherwise></choose> as auditValue,          
+            to_date('${item.updateTime}','yyyy-mm-dd hh24:mi:ss') as updateTime,
+            <choose><when test="item.dataFlag!=null">'${item.dataFlag}'</when><otherwise>null</otherwise></choose> as dataFlag,
+            <choose><when test="item.originalFlag!=null">'${item.originalFlag}'</when><otherwise>null</otherwise></choose> as originalFlag,
+            <choose><when test="item.dataStatus!=null">'${item.dataStatus}'</when><otherwise>null</otherwise></choose> as dataStatus,
+            <if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+			   <choose><when test="item.doubtful!=null">${item.doubtful}</when><otherwise>null</otherwise></choose> as doubtful,
+			</if>
+            <choose><when test="item.isValided!=null">${item.isValided}</when><otherwise>null</otherwise></choose> as  isValided                      
+            from dual   
+		</foreach>
+		) SOURCE ON (TARGET.POINTCODE=SOURCE.POINTCODE AND	TARGET.POLLUTECODE=SOURCE.POLLUTECODE AND TARGET.DATATIME=SOURCE.DATATIME)
+		WHEN MATCHED THEN
+		UPDATE SET
+            TARGET.DATAVALUE=SOURCE.DATAVALUE,
+            TARGET.MAXVALUE=SOURCE.MAXVALUE,
+            TARGET.MINVALUE=SOURCE.MINVALUE,
+            TARGET.AUDITVALUE=SOURCE.AUDITVALUE,
+            TARGET.DATAFLAG=SOURCE.DATAFLAG,  
+            TARGET.originalFlag=SOURCE.originalFlag,  
+            TARGET.DATASTATUS=SOURCE.DATASTATUS,
+            TARGET.ISVALIDED=SOURCE.ISVALIDED,
+            <if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+		    TARGET.DOUBTFUL=SOURCE.DOUBTFUL,
+		    </if>
+            TARGET.UPDATETIME= SOURCE.UPDATETIME
+        <if test="isOverride == null">
+			WHERE TARGET.DATAVALUE IS NULL
+		</if>    
+		WHEN NOT MATCHED THEN
+		INSERT (POINTCODE, POLLUTECODE, DATATIME, DATAVALUE, MAXVALUE, MINVALUE,
+		AUDITVALUE, UPDATETIME, DATAFLAG, originalFlag, DATASTATUS,
+		<if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+		DOUBTFUL,
+		</if>
+		ISVALIDED)
+		values(SOURCE.POINTCODE, SOURCE.POLLUTECODE, SOURCE.DATATIME, SOURCE.DATAVALUE, SOURCE.MAXVALUE,
+		SOURCE.MINVALUE, SOURCE.AUDITVALUE, SOURCE.UPDATETIME, SOURCE.DATAFLAG, SOURCE.originalFlag, SOURCE.DATASTATUS,
+		<if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+		SOURCE.DOUBTFUL,
+		</if>
+		SOURCE.ISVALIDED)
+	</insert>
+
+	<insert id="insertLatestByBatch">
+		MERGE INTO T_BAS_DATALATEST  TARGET
+		USING (
+		<foreach collection="t20x1s" item="item" index="index"
+			separator="union all">
+			select 
+			#{item.pointCode} as pointCode, 
+			#{item.polluteCode} as polluteCode, 
+			to_date(#{item.dataTime},'yyyy-mm-dd hh24:mi:ss')  as dataTime,
+			to_date(#{item.samplingTime},'yyyy-mm-dd hh24:mi:ss')  as samplingTime,
+			#{item.dataValue,jdbcType = DOUBLE} as dataValue,
+			#{item.maxValue,jdbcType = DOUBLE}as maxValue,
+			#{item.minValue,jdbcType = DOUBLE} as minValue,
+			#{item.auditValue,jdbcType = DOUBLE} as auditValue,
+			to_date(#{item.updateTime},'yyyy-mm-dd hh24:mi:ss')  as updateTime,
+			#{item.dataFlag,jdbcType = VARCHAR} as dataFlag,
+			#{item.dataStatus,jdbcType = DOUBLE} as dataStatus,
+			#{item.isValided,jdbcType = INTEGER} as isValided
+           from dual
+		</foreach>
+		) SOURCE ON (TARGET.POINTCODE=SOURCE.POINTCODE AND TARGET.POLLUTECODE=SOURCE.POLLUTECODE)
+		WHEN MATCHED THEN
+		UPDATE SET		
+		TARGET.DATAVALUE=SOURCE.DATAVALUE,
+		TARGET.MAXVALUE=SOURCE.MAXVALUE,
+		TARGET.MINVALUE=SOURCE.MINVALUE,
+		TARGET.AUDITVALUE=SOURCE.AUDITVALUE,
+		TARGET.UPDATETIME=SOURCE.UPDATETIME,
+		TARGET.DATAFLAG=SOURCE.DATAFLAG,
+		TARGET.DATASTATUS=SOURCE.DATASTATUS,
+		TARGET.ISVALIDED=SOURCE.ISVALIDED,
+		TARGET.SAMPLINGTIME=SOURCE.SAMPLINGTIME,
+		TARGET.DATATIME=SOURCE.DATATIME
+		WHERE SOURCE.DATATIME > TARGET.DATATIME
+		WHEN NOT MATCHED  THEN
+		INSERT (POINTCODE, POLLUTECODE, DATATIME,SAMPLINGTIME, DATAVALUE, MAXVALUE, MINVALUE,AUDITVALUE, UPDATETIME, DATAFLAG, DATASTATUS, ISVALIDED)
+		VALUES(SOURCE.POINTCODE, SOURCE.POLLUTECODE, SOURCE.DATATIME,SOURCE.SAMPLINGTIME, SOURCE.DATAVALUE, SOURCE.MAXVALUE,SOURCE.MINVALUE, SOURCE.AUDITVALUE, SOURCE.UPDATETIME, SOURCE.DATAFLAG, SOURCE.DATASTATUS, SOURCE.ISVALIDED)
+	</insert>
+</mapper>

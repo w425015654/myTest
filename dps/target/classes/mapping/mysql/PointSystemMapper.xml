@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dps.dao.PointSystemDAO">
+
+
+	<select id="queryPointSystemBySystype" parameterType="String"
+		resultType="com.zeei.das.dps.vo.PointSystemVO">
+		SELECT
+		SYSTEMTYPE AS systemType,
+		SYSNAME AS systemName,
+		TNAMERT AS realtimeTable,
+		TNAMEMI AS minuteTable,
+		TNAMEHH AS hourTable,
+		TNAMEDD AS dayTable,
+		SNAME AS stationName,
+		PNAME AS pointName
+		FROM
+		T_DIC_POINTSYSTYPE
+		<where>
+			SYSTEMTYPE=#{systype}
+		</where>
+	</select>
+
+	<select id="getPointSystemList" resultType="com.zeei.das.dps.vo.PointSystemVO">
+		SELECT
+		SYSTEMTYPE AS systemType,
+		SYSNAME AS systemName,
+		TNAMERT AS realtimeTable,
+		TNAMEMI AS minuteTable,
+		TNAMEHH AS hourTable,
+		TNAMEDD AS dayTable,
+		SNAME AS stationName,
+		PNAME AS pointName
+		FROM
+		T_DIC_POINTSYSTYPE
+	</select>
+
+</mapper>

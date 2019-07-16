@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dps.dao.PointSiteDAO">
+
+	<resultMap id="PointSiteMap" type="PointSiteVO">
+		<result column="POINTCODE" property="pointCode" jdbcType="INTEGER" />
+		<result column="STDPOINTCODE" property="mn" jdbcType="VARCHAR" />
+		<result column="POINTNAME" property="pointName" jdbcType="VARCHAR" />
+		<result column="SYSTEMTYPE" property="systemType" jdbcType="INTEGER" />
+		<result column="STATIONCODE" property="stationCode" jdbcType="INTEGER" />
+	</resultMap>	
+	
+	<select id="queryPointSiteByCondition" resultType="PointSiteVO">
+	   SELECT POINTCODE, STDPOINTCODE, POINTNAME, SYSTEMTYPE , PSCODE AS STATIONCODE
+	   	FROM T_PS_BAS_POINTLIST
+	    <where>
+		    SYSTEMTYPE=#{systype} AND STDPOINTCODE=#{mn}
+	     </where>
+	</select>
+	
+	<select id="getPointSiteList" resultType="com.zeei.das.dps.vo.PointSiteVO">
+	   SELECT 
+		  p.STDPOINTCODE AS MN,
+		  p.POINTCODE AS pointCode,
+		  p.POINTNAME AS pointName,
+		  SYSTEMTYPE AS ST,
+		  MICYCLETIME AS mInterval,
+		  RTCYCLETIME AS rInterval,
+		  rDataTime,
+		  mDataTime,
+		  hDataTime,
+		  dDataTime,
+		  isSupplement
+		FROM
+		  T_PS_BAS_POINTLIST p 
+		  LEFT JOIN T_BAS_DATATIME a 
+		    ON a.POINTCODE = p.POINTCODE
+		WHERE STATUS  IN (0,1) 
+	</select>
+	
+	<select id="getStation" resultType="com.zeei.das.dps.vo.PointSiteVO">
+	   SELECT 
+		  p.STDPOINTCODE AS MN,
+		  p.POINTCODE AS pointCode,
+		  p.POINTNAME AS pointName,
+		  SYSTEMTYPE AS ST,
+		  MICYCLETIME AS mInterval,
+		  RTCYCLETIME AS rInterval,
+		  rDataTime,
+		  mDataTime,
+		  hDataTime,
+		  dDataTime,
+		  isSupplement
+		FROM
+		  T_PS_BAS_POINTLIST p 
+		  LEFT JOIN T_BAS_DATATIME a 
+		    ON a.POINTCODE = p.POINTCODE 
+		WHERE STATUS  IN (0,1) 
+	    <if test="MN != null and MN != ''">
+		   AND  STDPOINTCODE=#{MN}
+	    </if>
+	</select>
+	
+	<insert id="insertSite" statementType="STATEMENT">
+	   INSERT INTO T_PS_BAS_POINTLIST(POINTCODE,STDPOINTCODE,POINTNAME,CREATETIME,STATUS,SYSTEMTYPE) 
+       VALUES((SELECT nvl(MAX(POINTCODE),0)+1 FROM T_PS_BAS_POINTLIST), '${MN}','自动建立站点', sysdate,1,${ST})			
+	</insert>	
+		
+	<update id="createDataTable" statementType="STATEMENT">
+	  CREATE TABLE ${table}  (
+	  POINTCODE int NOT NULL,
+	  POLLUTECODE varchar2(50) NOT NULL,
+	  DATATIME DATE NOT NULL,
+	  DATAVALUE number DEFAULT NULL,
+	  MAXVALUE number DEFAULT NULL,
+	  MINVALUE number DEFAULT NULL,
+	  AUDITVALUE number DEFAULT NULL,
+	  UPDATETIME DATE DEFAULT NULL,
+	  DATAFLAG varchar2(50) DEFAULT NULL,
+	  ORIGINALFLAG varchar2(50) DEFAULT NULL,
+	  DATASTATUS char(1) DEFAULT NULL,
+	  <if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+		DOUBTFUL int DEFAULT NULL,
+		OUTLIERDOUBTFUL int DEFAULT NULL,
+	  </if>
+	  ISVALIDED int DEFAULT NULL,
+	  constraint ${pkname} primary key (POINTCODE, POLLUTECODE,DATATIME)
+	  )
+	</update>
+	
+	<select  id="createIndex" resultType="String">	  
+	   ${indexSql} 
+	</select>
+	
+	<select id="querySystemTables" resultType="String">
+	   SELECT  table_name FROM  user_tables
+	</select>
+	<select id="queryExceptionTime" resultType="com.zeei.das.dps.vo.ExcludeTimeVO">
+		SELECT
+		p.POINTCODE,
+		STARTDATE AS bDateTime,
+		ENDDATE AS eDateTime
+		FROM
+		T_PS_PMS_EXCEPTION_APP
+		e,
+		T_PS_PMS_EXCEPTION_APP_PLIST p
+		WHERE e.APPID = p.APPID
+		AND e.APPLY_STATUS = 1
+		ORDER BY STARTDATE ASC,ENDDATE ASC
+	</select>
+
+	<select id="queryRegularStopTime" resultType="com.zeei.das.dps.vo.ExcludeTimeVO">
+		SELECT
+		pointCode,
+		WEEK,
+		NVL(to_char(STARTTIME,'hh24:mi:ss'), '00:00:00') AS startTime,
+        NVL(to_char(ENDTIME,'hh24:mi:ss'), '23:59:59') AS endTime
+		FROM
+		T_PS_PMS_REGULARSTOPTIME where STARTTIME is not null and ENDTIME is not null
+		ORDER BY STARTTIME ASC,ENDTIME ASC
+	</select>
+</mapper>

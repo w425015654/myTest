@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dps.dao.T20x1DAO">
+
+	 <insert id="insertT20x1ByBatch" statementType="STATEMENT">
+	   
+		<choose><when test="isOverride!=null">REPLACE INTO</when><otherwise>INSERT IGNORE INTO</otherwise></choose>
+		${table} (
+		POINTCODE,
+		POLLUTECODE,
+		DATATIME,
+		DATAVALUE,
+		`MAXVALUE`,
+		`MINVALUE`,
+		AUDITVALUE,
+		UPDATETIME,
+		DATAFLAG,
+		originalFlag,
+		DATASTATUS,
+		<if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+		DOUBTFUL,
+		</if>
+		ISVALIDED)
+		values
+		<foreach collection="t20x1s" item="item" index="index"
+			separator=",">
+			(${item.pointCode}, 
+			'${item.polluteCode}', 
+			date_format('${item.dataTime}','%Y%m%d%H%i%s'),
+            <choose><when test="item.dataValue!=null">${item.dataValue},</when><otherwise>null,</otherwise></choose>
+            <choose><when test="item.maxValue!=null">${item.maxValue},</when><otherwise>null,</otherwise></choose>
+            <choose><when test="item.minValue!=null">${item.minValue},</when><otherwise>null,</otherwise></choose>
+            <choose><when test="item.auditValue!=null">${item.auditValue},</when><otherwise>null,</otherwise></choose>            
+            date_format('${item.updateTime}','%Y%m%d%H%i%s'), 
+            <choose><when test="item.dataFlag!=null">'${item.dataFlag}',</when><otherwise>null,</otherwise></choose>
+             <choose><when test="item.originalFlag!=null">'${item.originalFlag}',</when><otherwise>null,</otherwise></choose>
+            <choose><when test="item.dataStatus!=null">'${item.dataStatus}',</when><otherwise>null,</otherwise></choose>
+            <if test="table.toString() == 'T_ENV_MONI_AIR_DATAHH'.toString()">
+			   <choose><when test="item.doubtful!=null">${item.doubtful},</when><otherwise>null,</otherwise></choose>
+			</if>
+            <choose><when test="item.isValided!=null">${item.isValided}</when><otherwise>null</otherwise></choose>)
+		</foreach>
+	</insert>
+
+	<insert id="insertLatestByBatch">
+		INSERT INTO T_BAS_DATALATEST (
+		POINTCODE,
+		POLLUTECODE,
+		DATATIME,
+		DATAVALUE,
+		`MAXVALUE`,
+		`MINVALUE`,
+		AUDITVALUE,
+		UPDATETIME,
+		DATAFLAG,
+		DATASTATUS,
+		SAMPLINGTIME,
+		ISVALIDED)
+		values
+		<foreach collection="t20x1s" item="item" index="index"
+			separator=",">
+			(#{item.pointCode,jdbcType=INTEGER},
+			#{item.polluteCode,jdbcType=VARCHAR},
+			date_format(#{item.dataTime},'%Y%m%d%H%i%s'),
+			#{item.dataValue,jdbcType=DOUBLE},
+			#{item.maxValue,jdbcType=DOUBLE},
+			#{item.minValue,jdbcType=DOUBLE},
+			#{item.auditValue,jdbcType=DOUBLE},
+			date_format(#{item.updateTime},'%Y%m%d%H%i%s'),
+			#{item.dataFlag,jdbcType=VARCHAR},
+			#{item.dataStatus,jdbcType=VARCHAR},
+			date_format(#{item.samplingTime},'%Y%m%d%H%i%s'),
+			#{item.isValided,jdbcType=INTEGER}
+			)
+		</foreach>
+		ON DUPLICATE KEY UPDATE		
+		DATAVALUE = IF(DATATIME > VALUES(DATATIME),  DATAVALUE,VALUES(DATAVALUE)),
+		`MAXVALUE` = IF(DATATIME > VALUES(DATATIME), `MAXVALUE`, VALUES(`MAXVALUE`)),
+		`MINVALUE` = IF(DATATIME > VALUES(DATATIME), `MINVALUE`,VALUES(`MINVALUE`)),
+		AUDITVALUE = IF(DATATIME > VALUES(DATATIME), AUDITVALUE,VALUES(AUDITVALUE)),
+		UPDATETIME = IF(DATATIME > VALUES(DATATIME), UPDATETIME,VALUES(UPDATETIME)),
+		DATAFLAG = IF(DATATIME > VALUES(DATATIME),  DATAFLAG,VALUES(DATAFLAG)),
+		DATASTATUS = IF(DATATIME > VALUES(DATATIME), DATASTATUS,VALUES(DATASTATUS)),
+		ISVALIDED = IF(DATATIME > VALUES(DATATIME), ISVALIDED,VALUES(ISVALIDED)),
+		SAMPLINGTIME = IF(SAMPLINGTIME > VALUES(SAMPLINGTIME) OR VALUES(DATAFLAG) ='G', IFNULL(SAMPLINGTIME, VALUES(SAMPLINGTIME)),VALUES(SAMPLINGTIME)),
+		DATATIME = IF(DATATIME > VALUES(DATATIME), DATATIME,VALUES(DATATIME))
+	</insert>
+
+</mapper>

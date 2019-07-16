@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.cgs.dao.ConfigDao">
+
+	<select id="queryStationCfg" resultType="com.zeei.das.cgs.vo.StationCfgVO">
+		SELECT
+			T1.STDPOINTCODE AS MN,
+			T1.POINTCODE AS pointCode,
+			T1.POINTCODE AS ID,
+			T1.SYSTEMTYPE AS ST,
+			T1.MICYCLETIME AS mInterval,
+			T1.RTCYCLETIME AS rInterval,
+			T1.REGIONCODE AS areaCode,
+			T1.ISTIMECAL AS isMsgAck,
+			T1.ISMSGACK AS isTimecal,
+			T1.ISSUP212 AS isSup212,
+			T1.ISVERIFYPASSWD AS isVerifyPasswd,
+			T1.ISSTATSMI AS isStatsMI,
+			T1.ISSTATSHH AS isStatsHH,
+			T1.ISSTATSDD AS isStatsDD,
+			T2.RDATATIME,
+			T2.MDATATIME,
+			T2.HDATATIME,
+			T2.DDATATIME
+		FROM
+			V_BAS_POINTSITE_INFO T1
+		JOIN T_BAS_DATATIME T2 ON T1.POINTCODE = T2.POINTCODE
+	</select>
+	
+	<select id="getStationCfg"	resultType="com.zeei.das.cgs.vo.StationCfgVO">
+		SELECT 
+		  STDPOINTCODE AS MN,
+		  POINTCODE AS pointCode,
+		  POINTCODE AS ID,
+		  SYSTEMTYPE AS ST,
+		  MICYCLETIME AS mInterval,
+		  RTCYCLETIME AS rInterval,
+		  REGIONCODE AS areaCode,
+		  ISTIMECAL AS isMsgAck,
+		  ISMSGACK AS isTimecal,
+		  ISSUP212 AS isSup212,
+		  ISVERIFYPASSWD AS isVerifyPasswd,
+		  ISSTATSMI AS isStatsMI,
+		  ISSTATSHH AS isStatsHH,
+		  ISSTATSDD AS isStatsDD 
+		FROM
+		  V_BAS_POINTSITE_INFO
+		<where>			
+			<if test="MN != null and MN != ''">
+				AND STDPOINTCODE=#{MN}
+			</if>		
+		</where>	
+	</select>
+	
+	<select id="queryParamCfg" resultType="com.zeei.das.cgs.vo.ParamCfgVO">
+		SELECT 
+		  PARAMID AS oldCode,
+		  POLLUTECODE newCode
+		FROM
+		  T_DIC_POLL_TRANS
+		WHERE systype = 1 			
+	</select>
+	
+	<insert id="insertSite" statementType="STATEMENT">
+		<choose>		
+			<when test='table=="T_PS_BAS_POINTLIST"'>			
+				INSERT INTO T_PS_BAS_POINTLIST(POINTCODE,PSCODE,STDPOINTCODE,POINTNAME,SYSTEMTYPE,STATUS)
+				VALUES((SELECT NVL(MAX(POINTCODE),0)+1 FROM V_BAS_POINTSITE_INFO),-1,'${MN}','自动建立站点',${ST},1)			
+			</when>		
+			<otherwise>
+		       INSERT INTO ${table} (POINTCODE,STDPOINTCODE,POINTNAME,CREATETIME,SYSTEMTYPE,STATUS) 
+		       VALUES((SELECT NVL(MAX(POINTCODE),0)+1 FROM V_BAS_POINTSITE_INFO), '${MN}','自动建立站点', sysdate,${ST},1)
+		    </otherwise>			
+		</choose>		   
+	</insert>
+	
+	<select id="queryPointSystem" resultType="com.zeei.das.cgs.vo.PointSystemVO">
+	   SELECT 
+		  SYSTEMTYPE AS ST,
+		  PNAME AS tableName
+		FROM
+		  T_DIC_POINTSYSTYPE
+	</select>
+
+</mapper>

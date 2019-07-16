@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.cas.dao.CtlMsgDao">
+
+	<insert id="insertCtrlRecDetail" parameterType="com.zeei.das.cas.vo.CtlRecDetailVO">
+		INSERT INTO
+		T_BAS_COMPDATA_REC_DETAIL (
+		QN,
+		DATATIME,
+		RESULT,
+		USERID,
+		REMARK
+		)
+		VALUES(
+		#{QN,jdbcType=VARCHAR},
+		#{dataTime,jdbcType=TIMESTAMP},
+		#{result,jdbcType=VARCHAR},
+		-1,
+		#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateCtlRec" parameterType="com.zeei.das.cas.vo.CtlRecDetailVO">
+		UPDATE
+		T_BAS_COMPDATA_REC SET CMDSTATUS = #{cmdStatus,jdbcType=INTEGER}
+		WHERE QN =#{QN}
+	</update>
+
+	<insert id="insertCompRecDetailByBatch" parameterType="java.util.List">
+		INSERT INTO
+		T_BAS_COMPDATA_REC_DETAIL (
+		QN,
+		DATATIME,
+		RESULT,
+		USERID,
+		REMARK
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.QN,jdbcType=VARCHAR},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.result,jdbcType=VARCHAR},
+			-1,
+			#{item.remark,jdbcType=VARCHAR}			
+			)
+		</foreach>
+	</insert>
+	
+	<insert id="insertCtrlRecDetailByBatch" parameterType="java.util.List">
+		INSERT INTO
+		T_BAS_CONTROL_REC_DETAIL (
+		QN,
+		DATATIME,
+		RESULT,
+		USERID,
+		REMARK,
+		CODEID
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.QN,jdbcType=VARCHAR},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.result,jdbcType=VARCHAR},
+			-1,
+			#{item.remark,jdbcType=VARCHAR},
+			#{item.codeID,jdbcType=VARCHAR}	
+			)
+		</foreach>
+	</insert>
+
+	<update id="updateCompRecByBatch" parameterType="java.util.List">		
+		<foreach collection="list" item="item" index="index"
+			separator=";">
+			UPDATE T_BAS_COMPDATA_REC SET CMDSTATUS = ${item.cmdStatus}	WHERE 	QN ='${item.QN}'
+		</foreach>
+	</update>
+	
+	<update id="updateCtlRecByBatch" parameterType="java.util.List">		
+		<foreach collection="list" item="item" index="index"
+			separator=";">
+			UPDATE T_BAS_CONTROL_REC SET 
+				CMDSTATUS = ${item.cmdStatus},
+				MRQSTR = '${item.mrqStr}',
+				MRQFLAG = '${item.mrqFlag}'
+			WHERE QN ='${item.QN}'
+		</foreach>
+	</update>
+	
+	
+	<insert id="insert2070ByBatch" parameterType="java.util.List">
+	
+	    INSERT INTO T_BAS_QC_RESULT(PIKD,POINTCODE, DATATIME, CMDTYPE,
+		POLLUTECODE,QN,TAGVAL,RESVAL,DEVAL,ALARMVAL,CTRLVAL,QCSOURCE,QCRESULT)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(
+			#{item.pikd,jdbcType=INTEGER},
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.cmdType,jdbcType=VARCHAR},
+			#{item.polluteCode,jdbcType=VARCHAR},
+			#{item.qn,jdbcType=VARCHAR},
+			#{item.tagval,jdbcType=VARCHAR},
+			#{item.resval,jdbcType=VARCHAR},
+			#{item.deval,jdbcType=VARCHAR},
+			#{item.alarmVal,jdbcType=VARCHAR},
+			#{item.ctrlVal,jdbcType=VARCHAR},
+			#{item.qcSource,jdbcType=VARCHAR},
+			#{item.qcResult,jdbcType=VARCHAR}
+			)
+		</foreach>
+	
+	</insert>
+	
+
+	<insert id="insert2076ByBatch" parameterType="java.util.List">
+		INSERT INTO T_BAS_POINT_LOG(POINTCODE, LOGTIME, LOGCONTENT,
+		USERID,LOGTYPE)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.logTime,jdbcType=TIMESTAMP},
+			#{item.logContent,jdbcType=VARCHAR},
+			#{item.userId,jdbcType=INTEGER},
+			#{item.logType,jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+
+	<insert id="insert2076" parameterType="com.zeei.das.cas.vo.Msg2076VO">
+		INSERT INTO
+		T_BAS_POINT_LOG(POINTCODE, LOGTIME, LOGCONTENT,USERID,LOGTYPE)
+		VALUES(
+		#{pointCode,jdbcType=INTEGER},
+		#{logTime,jdbcType=TIMESTAMP},
+		#{logContent,jdbcType=VARCHAR},
+		#{userId,jdbcType=INTEGER},
+		#{logType,jdbcType=VARCHAR}
+		)
+
+	</insert>
+
+	<insert id="insert2021Latest" parameterType="java.util.List">		
+		REPLACE INTO T_BAS_STATLATEST(POINTCODE, POLLUTECODE, STATUSCODE,
+		DATATIME,DATAVALUE,UPDATETIME)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.polluteCode,jdbcType=VARCHAR},
+			#{item.statusCode,jdbcType=VARCHAR},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.dataValue,jdbcType=VARCHAR},
+			#{item.updateTime,jdbcType=TIMESTAMP}
+			)		
+		</foreach>	
+	</insert>
+
+	<insert id="insert2021ByBatch" parameterType="java.util.List">
+		INSERT INTO T_BAS_STATEHISTORY(POINTCODE, POLLUTECODE, STATUSCODE,
+		DATATIME,DATAVALUE,UPDATETIME)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.polluteCode,jdbcType=VARCHAR},
+			#{item.statusCode,jdbcType=VARCHAR},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.dataValue,jdbcType=VARCHAR},
+			#{item.updateTime,jdbcType=TIMESTAMP}
+			)
+		</foreach>
+	</insert>
+	
+	<insert id="insert2062ByBatch" parameterType="java.util.List">
+		REPLACE INTO T_ENV_MONI_RIV_CHKDATA (
+		  	  POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  DCHECK,
+			  VOLUME,
+			  DVOLUME,
+			  DATAFLAG,
+			  UPDATETIME, 
+			  dataType,
+			  qn,
+			  dataStatus
+		) 
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.ParamID,jdbcType=VARCHAR},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.StandardValue,jdbcType=VARCHAR},
+			#{item.Check,jdbcType=VARCHAR},
+			#{item.Volume,jdbcType=VARCHAR},
+			#{item.DVolume,jdbcType=VARCHAR},
+			#{item.Flag,jdbcType=VARCHAR},
+			#{item.updateTime,jdbcType=TIMESTAMP},
+			#{item.dataType,jdbcType=INTEGER},
+			#{item.qn,jdbcType=VARCHAR},
+			#{item.dataStatus,jdbcType=INTEGER}
+			)
+		</foreach>
+	</insert>
+	
+	<insert id="insert2063ByBatch" parameterType="java.util.List">
+		REPLACE INTO T_ENV_MONI_RIV_RCYLDATA (
+		  POINTCODE,
+		  POLLUTECODE,
+		  FDATATIME,
+		  DATATIME,
+		  DATAVALUE,
+		  DCHECK,
+		  DCHROMA,
+		  VOLUME,
+		  DVOLUME,
+		  DATAFLAG,
+		  UPDATETIME,
+		  dataType,
+		  qn,
+		  dataStatus
+		) 
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.ParamID,jdbcType=VARCHAR},
+			#{item.waterTime,jdbcType=TIMESTAMP},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.Water,jdbcType=DOUBLE},
+			#{item.Check,jdbcType=DOUBLE},
+			#{item.Chroma,jdbcType=DOUBLE},
+			#{item.Volume,jdbcType=DOUBLE},
+			#{item.DVolume,jdbcType=DOUBLE},
+			#{item.Flag,jdbcType=VARCHAR},
+			#{item.updateTime,jdbcType=TIMESTAMP},
+			#{item.dataType,jdbcType=INTEGER},
+			#{item.qn,jdbcType=VARCHAR},
+			#{item.dataStatus,jdbcType=INTEGER}
+			)
+		</foreach>
+	</insert>
+	
+	
+	<insert id="insert20656ByBatch" parameterType="java.util.List">
+		REPLACE INTO T_ENV_MONI_RIV_DATAAUDIT (
+		  	  POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  DCHECK,
+              SPANVALUE,
+			  DATAFLAG,
+			  UPDATETIME, 
+			  auditTime,
+			  dataType,
+			  qn,
+			  dataStatus
+		) 
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.pointCode,jdbcType=INTEGER},
+			#{item.ParamID,jdbcType=VARCHAR},
+			#{item.dataTime,jdbcType=TIMESTAMP},
+			#{item.StandardValue,jdbcType=VARCHAR},
+			#{item.Check,jdbcType=VARCHAR},
+            #{item.SpanValue,jdbcType=VARCHAR},
+			#{item.Flag,jdbcType=VARCHAR},
+			#{item.updateTime,jdbcType=TIMESTAMP},
+			<choose><when test="item.auditTime!=null and item.auditTime!=''">#{item.auditTime,jdbcType=TIMESTAMP},</when><otherwise>null,</otherwise></choose>
+			#{item.dataType,jdbcType=INTEGER},
+			#{item.qn,jdbcType=VARCHAR},
+			#{item.dataStatus,jdbcType=INTEGER}
+			)
+		</foreach>
+	</insert>
+	
+	
+	<delete id="delete2063ByBatch"  parameterType="java.util.Map">
+	
+	    delete   from   T_ENV_MONI_RIV_RCYLDATA   
+	    
+	    where   
+	    datastatus=1 and  datatype=1 
+        <if test="dataTime != null and dataTime != ''">
+			AND DATE_FORMAT(datatime,'%Y-%m')=#{dataTime}
+		</if>
+		<if test="pointCode != null and pointCode != ''">
+			AND pointcode=#{pointCode}
+		</if>
+	
+	</delete>
+
+</mapper>

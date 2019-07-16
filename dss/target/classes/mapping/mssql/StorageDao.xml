@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.dss.dao.StorageDao">
+
+	<insert id="insertData" statementType="STATEMENT">
+		merge into ${tableName} as T
+	   using (values
+		(${vo.pointCode}, 
+		 '${vo.polluteCode}',
+		 '${vo.dataTime}',		
+		  <choose><when test="vo.dataValue!=null">${vo.dataValue},</when><otherwise>null,</otherwise></choose>
+          <choose><when test="vo.maxValue!=null">${vo.maxValue},</when><otherwise>null,</otherwise></choose>
+          <choose><when test="vo.minValue!=null">${vo.minValue},</when><otherwise>null,</otherwise></choose>
+          <choose><when test="vo.auditValue!=null">${vo.auditValue},</when><otherwise>null,</otherwise></choose>
+		 '${vo.updateTime}',
+		 '${vo.dataFlag}',
+		 '${vo.dataStatus}',
+		 ${vo.isValided})) as S 
+		( POINTCODE,
+		  POLLUTECODE,
+		  DATATIME,
+		  DATAVALUE,
+		  MAXVALUE,
+		  MINVALUE,
+		  AUDITVALUE,
+		  UPDATETIME,
+		  DATAFLAG,
+		  DATASTATUS,
+		  ISVALIDED)
+		 ON  T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE  and T.DATATIME=S.DATATIME
+	   when matched then
+	   update set  T.UPDATETIME=S.UPDATETIME, 
+       T.MINVALUE=S.MINVALUE, T.MAXVALUE=S.MAXVALUE, 
+       T.DATAVALUE=S.DATAVALUE, T.DATAFLAG=S.DATAFLAG,
+       T.AUDITVALUE=S.AUDITVALUE,T.DATASTATUS=S.DATASTATUS,
+	   T.ISVALIDED=S.ISVALIDED
+	   when not matched by TARGET then
+	   insert ( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  MAXVALUE,
+			  MINVALUE,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATAFLAG,
+			  DATASTATUS,
+			  ISVALIDED) values(S.POINTCODE,
+		  S.POLLUTECODE,
+		  S.DATATIME,
+		  S.DATAVALUE,
+		  S.MAXVALUE,
+		  S.MINVALUE,
+		  S.AUDITVALUE,
+		  S.UPDATETIME,
+		  S.DATAFLAG,
+		  S.DATASTATUS,
+		  S.ISVALIDED); 
+	</insert>
+
+
+	<insert id="insertDataBatch" statementType="STATEMENT">			
+		merge into ${tableName} as T
+		   using (values
+		   <foreach collection="list" item="item" index="index" separator=",">
+			( ${item.pointCode}, 
+			 '${item.polluteCode}',
+			 '${item.dataTime}',
+			 <choose><when test="item.dataValue!=null">${item.dataValue},</when><otherwise>null,</otherwise></choose>
+	          <choose><when test="item.maxValue!=null">${item.maxValue},</when><otherwise>null,</otherwise></choose>
+	          <choose><when test="item.minValue!=null">${item.minValue},</when><otherwise>null,</otherwise></choose>
+	          <choose><when test="item.auditValue!=null">${item.auditValue},</when><otherwise>null,</otherwise></choose>
+			 '${item.updateTime}',
+			 '${item.dataFlag}',
+			 '${item.dataStatus}',
+			 ${item.isValided})
+			</foreach>) as S 
+			( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  MAXVALUE,
+			  MINVALUE,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATAFLAG,
+			  DATASTATUS,
+			  ISVALIDED)
+			 ON  T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE  and T.DATATIME=S.DATATIME
+		   when matched then
+		   update set  T.UPDATETIME=S.UPDATETIME, 
+           T.MINVALUE=S.MINVALUE, T.MAXVALUE=S.MAXVALUE,
+           T.DATAVALUE=S.DATAVALUE, T.DATAFLAG=S.DATAFLAG,
+           T.AUDITVALUE=S.AUDITVALUE,T.DATASTATUS=S.DATASTATUS,
+		   T.ISVALIDED=S.ISVALIDED
+		   when not matched by TARGET then
+		   insert
+		   ( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  DATAVALUE,
+			  MAXVALUE,
+			  MINVALUE,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATAFLAG,
+			  DATASTATUS,
+			  ISVALIDED)
+		    values(S.POINTCODE,
+			  S.POLLUTECODE,
+			  S.DATATIME,
+			  S.DATAVALUE,
+			  S.MAXVALUE,
+			  S.MINVALUE,
+			  S.AUDITVALUE,
+			  S.UPDATETIME,
+			  S.DATAFLAG,
+			  S.DATASTATUS,
+			  S.ISVALIDED); 
+		</insert>
+		
+		<insert id="insertYMDataByBatch" statementType="STATEMENT">
+			merge into ${tableName} as T
+			   using (values 
+			   <foreach collection="list" item="item" index="index" separator=",">
+		            ( ${item.pointCode},
+					  '${item.polluteCode}',
+					  '${item.dataType}',
+					  '${item.dataTime}',
+					  '${item.updateTime}',					  
+			          <choose><when test="item.maxValue!=null">${item.maxValue},</when><otherwise>null,</otherwise></choose>
+			          <choose><when test="item.minValue!=null">${item.minValue},</when><otherwise>null,</otherwise></choose>
+			          <choose><when test="item.dataValue!=null">${item.dataValue},</when><otherwise>null,</otherwise></choose>
+					  '${item.dataFlag}')
+		       </foreach>
+			   )
+			   as S (POINTCODE,
+					  POLLUTECODE,
+					  MONITORTYPE,
+					  DATATIME,
+					  UPDATETIME,
+					  MAXVALUE,
+					  MINVALUE,
+					  AVGVALUE,
+					  DATAFLAG)
+			   ON  T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE and T.MONITORTYPE=S.MONITORTYPE and T.DATATIME=S.DATATIME
+			   when matched then
+			   update set T.UPDATETIME=S.UPDATETIME, 
+               T.MAXVALUE=S.MAXVALUE, T.MINVALUE=S.MINVALUE, 
+               T.AVGVALUE=S.AVGVALUE, T.DATAFLAG=S.DATAFLAG
+			   when not matched by TARGET then
+			   insert (POINTCODE,
+					  POLLUTECODE,
+					  MONITORTYPE,
+					  DATATIME,
+					  UPDATETIME,
+					  MAXVALUE,
+					  MINVALUE,
+					  AVGVALUE,
+					  DATAFLAG) values(S.POINTCODE,
+					  S.POLLUTECODE,
+					  S.MONITORTYPE,
+					  S.DATATIME,
+					  S.UPDATETIME,
+					  S.MAXVALUE,
+					  S.MINVALUE,
+					  S.AVGVALUE,
+					  S.DATAFLAG); 		  
+	</insert>
+	
+	<insert id="insertYMData" statementType="STATEMENT">
+			merge into ${tableName} as T
+			   using (values			  
+		            ( ${vo.pointCode},
+					  '${vo.polluteCode}',
+					  '${vo.dataType}',
+					  '${vo.dataTime}',
+					  '${vo.updateTime}',
+					  <choose><when test="vo.maxValue!=null">${vo.maxValue},</when><otherwise>null,</otherwise></choose>
+			          <choose><when test="vo.minValue!=null">${vo.minValue},</when><otherwise>null,</otherwise></choose>
+			          <choose><when test="vo.dataValue!=null">${vo.dataValue},</when><otherwise>null,</otherwise></choose>
+					  '${vo.dataFlag}')		      
+			   )
+			   as S (POINTCODE,
+					  POLLUTECODE,
+					  MONITORTYPE,
+					  DATATIME,
+					  UPDATETIME,
+					  MAXVALUE,
+					  MINVALUE,
+					  AVGVALUE,
+					  DATAFLAG)
+			   ON  T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE and T.MONITORTYPE=S.MONITORTYPE and T.DATATIME=S.DATATIME
+			   when matched then
+			   update set T.UPDATETIME=S.UPDATETIME, T.MAXVALUE=S.MAXVALUE, 
+               T.MINVALUE=S.MINVALUE, T.AVGVALUE=S.AVGVALUE,
+                T.DATAFLAG=S.DATAFLAG
+			   when not matched by TARGET then
+			   insert (POINTCODE,
+					  POLLUTECODE,
+					  MONITORTYPE,
+					  DATATIME,
+					  UPDATETIME,
+					  MAXVALUE,
+					  MINVALUE,
+					  AVGVALUE,
+					  DATAFLAG) values(S.POINTCODE,
+					  S.POLLUTECODE,
+					  S.MONITORTYPE,
+					  S.DATATIME,
+					  S.UPDATETIME,
+					  S.MAXVALUE,
+					  S.MINVALUE,
+					  S.AVGVALUE,
+					  S.DATAFLAG); 		  
+	</insert>
+	
+	
+	<insert id="insertAuditDataBatch" statementType="STATEMENT">			
+		merge into ${tableName} as T
+		   using (values
+		   <foreach collection="list" item="item" index="index" separator=",">
+			( ${item.pointCode}, 
+			 '${item.polluteCode}',
+			 '${item.dataTime}',			
+			  <choose><when test="item.auditValue!=null">${item.auditValue},</when><otherwise>null,</otherwise></choose>
+			 '${item.updateTime}',
+			 '${item.dataStatus}',
+			 ${item.isValided},
+			 '${item.dataFlag}')
+			</foreach>) as S 
+			( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,			 
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATASTATUS,
+			  ISVALIDED,
+			  dataFlag
+			 )
+			 ON  T.POINTCODE=S.POINTCODE and T.POLLUTECODE=S.POLLUTECODE  and T.DATATIME=S.DATATIME
+		   when matched then
+		   update set  T.UPDATETIME=S.UPDATETIME,T.AUDITVALUE=S.AUDITVALUE,T.ISVALIDED=S.ISVALIDED, T.dataFlag=S.dataFlag,T.dataStatus=S.dataStatus
+		   when not matched by TARGET then
+		   insert
+		   ( POINTCODE,
+			  POLLUTECODE,
+			  DATATIME,
+			  AUDITVALUE,
+			  UPDATETIME,
+			  DATASTATUS,
+			  ISVALIDED,
+			  dataFlag
+			)
+		    values(S.POINTCODE,
+			  S.POLLUTECODE,
+			  S.DATATIME,
+			  S.AUDITVALUE,
+			  S.UPDATETIME,
+			  S.DATASTATUS,
+			  S.ISVALIDED,
+			  S.dataFlag
+			  ); 
+		</insert>
+		
+	<update id="reviewData" statementType="STATEMENT">
+		UPDATE ${tableName}
+			SET DATASTATUS=2
+		WHERE POINTCODE=${pointCode}
+			<if test="beginTime!=null and beginTime!=''">
+				AND DATATIME &gt;='${beginTime}'
+			</if>
+			AND DATATIME &lt; '${endTime}'
+			AND	DATASTATUS=1
+	</update>
+	
+	<update id="auditData" statementType="STATEMENT">
+		UPDATE ${tableName}
+			SET DATASTATUS=1
+		WHERE POINTCODE=${pointCode}
+			<if test="beginTime!=null and beginTime!=''">
+				AND DATATIME &gt;='${beginTime}'
+			</if>
+			AND DATATIME &lt; '${endTime}'
+			AND	(DATASTATUS=0 OR DATASTATUS is null)
+			AND POLLUTECODE in (SELECT POLLUTECODE FROM T_DIC_STDPOLLCODE WHERE ISAUDIT=1)
+	</update>
+
+</mapper>

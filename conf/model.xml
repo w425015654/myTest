@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<models>
+		<model id="cgs">
+			<srvCode>CGS</srvCode>
+			<PORT>1211</PORT><!--CGS服务发布端口 -->
+			<reportCycle>5</reportCycle>
+			<isLen>1</isLen>
+			<isCrc>1</isCrc>
+			<passbackDays>3</passbackDays><!--允许补数天数,超过范围无效 -->
+		</model>	
+		
+		<model id="nds">
+			<srvCode>NDS</srvCode>
+			<reportCycle>5</reportCycle>
+			<mail.smtp.host>smtp.exmail.qq.com</mail.smtp.host>
+			<mail.smtp.port>465</mail.smtp.port>
+			<mail.user>zeei.mailServer@zeei.com.cn</mail.user><!--通知服务邮件通知发送账号 -->
+			<mail.password>Zms2015##</mail.password><!--通知服务邮件通知发送密码 -->
+			<sms.host>http://service.winic.org/sys_port/gateway/index.asp</sms.host><!--短信通知服务默认主机地址 -->
+			<sms.id>洪泽水质管控项目</sms.id><!--短信通知服务短信ID -->
+			<sms.pwd>509323225</sms.pwd><!--短信通知服务密码 -->
+		</model>		
+		
+		<model id="lts">
+			<srvCode>LTS</srvCode>
+			<logRoot></logRoot>
+			<reportCycle>5</reportCycle>
+		</model>	
+		
+		<model id="dss">
+			<srvCode>DSS</srvCode>
+			<reportCycle>5</reportCycle>
+			<isCou>1</isCou><!--是否进行排放量统计 1统计/0不统计 -->
+			<STS>22</STS>
+			<STL>21</STL>
+			<ISLQ>1</ISLQ>
+			<ISPI>0</ISPI><!--是否进行网格化分钟污染事件统计 1统计/0不统计 -->
+			<autoReview>1</autoReview>
+			<autoAudit>1</autoAudit>
+			<skFilter>1</skFilter><!--广西过滤实况因子 1过滤/0不过滤 -->
+			<reviewTime>1</reviewTime>
+			<auditTime>1</auditTime>
+			<fourHourPollute></fourHourPollute>
+		</model>
+		
+		<model id="dps">
+			<srvCode>DPS</srvCode>
+			<ServiceInstance>RDPS,MDPS,HDPS,DDPS</ServiceInstance>
+			<reportCycle>5</reportCycle>
+			<PullPeriod>60</PullPeriod>
+			<BatchSize>500</BatchSize>
+			<complement>0</complement>
+		</model>	
+		
+		<model id="cas">
+			<srvCode>CAS</srvCode>
+			<reportCycle>5</reportCycle>
+		</model>
+		
+		<model id="aps">
+			<srvCode>APS</srvCode>
+			<reportCycle>5</reportCycle>
+			<alarmSync>1</alarmSync><!--告警同步，1为同步 -->
+		</model>	
+		
+		<model id="aas">
+			<srvCode>AAS</srvCode>
+			<reportCycle>5</reportCycle>
+			<onlineCycle>5</onlineCycle>
+			<onlineTime>30</onlineTime>
+			<onlineCode>10001</onlineCode>
+			<upsideDownCode>90093</upsideDownCode>
+			<abnormalCode>90094</abnormalCode>
+			<fluctuationCode>90095</fluctuationCode>
+			<rivEarlyWarn>5</rivEarlyWarn><!--地表水趋势预警周期数 -->
+		</model>	
+		
+		<model id="mds">
+			<startModel>service</startModel>
+			<srvCode>MDS</srvCode>
+			<CheckPeriod>5</CheckPeriod>
+			<StartTime>60</StartTime>
+			<cpuAlarmValue>5</cpuAlarmValue><!--CPU剩余百分比告警值 -->
+			<memAlarmValue>0.5</memAlarmValue><!--内存剩余告警值单位G -->
+			<alarmCycle>120</alarmCycle><!--服务器状态监控告警时间间隔单位S -->
+			<memAlarmCount>3</memAlarmCount><!--内存告警超过门限值次数(连续累计次数) -->
+			<cpuAlarmCount>3</cpuAlarmCount><!--CPU告警超过门限值次数(连续累计次数) -->			
+		</model>
+		
+		<model id="hvystatis">
+		    <min>1</min>
+			<minsize>2</minsize>
+			<minperiod>15</minperiod>
+			<minaqi>100</minaqi>
+			<day>1</day>
+			<daysize>3</daysize>
+			<dayperiod>1</dayperiod>
+			<dayaqi>200</dayaqi>
+		</model>	
+		
+	</models>
+
+	<!--请根据服务器实际情况设置 -->
+	<disks>
+		<disk>
+			<driveLetter>C:\</driveLetter>
+			<diskAlarmValue>1024</diskAlarmValue><!--磁盘剩余空间告警值单位M -->
+		</disk>
+		<disk>
+			<driveLetter>D:\</driveLetter>
+			<diskAlarmValue>1024</diskAlarmValue><!--磁盘剩余空间告警值单位M -->
+		</disk>
+	</disks>
+	<services>
+	
+		<service>
+			<code>CGS</code>
+			<name>ZEEI.CGS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>	
+			<code>AAS</code>
+			<name>ZEEI.AAS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>APS</code>
+			<name>ZEEI.APS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>DPS</code>		
+			<name>ZEEI.DPS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>CAS</code>		
+			<name>ZEEI.CAS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>DSS</code>
+			<name>ZEEI.DSS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>NDS</code>
+			<name>ZEEI.NDS.P</name>
+			<threshold>30</threshold>
+		</service>
+		
+		<service>
+			<code>LTS</code>
+			<name>ZEEI.LTS.P</name>
+			<threshold>30</threshold>
+		</service>	
+	</services>
+
+
+	<plugins directory="C:/Users/Administrator/Desktop/MQDas_Product/lib">
+		<plugin>
+			<name>cgs</name>
+			<desc>网关服务插件</desc>		
+			<jar>cgs-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>aas</name>
+			<desc>告警服务插件</desc>		
+			<jar>aas-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>aps</name>
+			<desc>告警处理服务插件</desc>		
+			<jar>aps-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>cas</name>
+			<desc>控制代理服务插件</desc>		
+			<jar>cas-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>dps</name>
+			<desc>数据入库服务插件</desc>		
+			<jar>dps-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>lts</name>
+			<desc>日志服务插件</desc>		
+			<jar>lts-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>nds</name>
+			<desc>通知服务插件</desc>		
+			<jar>nds-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+		<plugin>
+			<name>dss</name>
+			<desc>数据统计服务插件</desc>		
+			<jar>dss-1.0.0.jar</jar>		
+			<threshold>10</threshold>
+		</plugin>
+		
+	</plugins>
+
+</config>

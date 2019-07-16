@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zeei.das.aas.dao.StationDao">
+
+	<select id="queryFlowFactor" resultType="com.zeei.das.aas.vo.PolluteVO">
+		SELECT 
+		  pollutecode,
+		  polluteName,
+		  polluteClass,
+		  SYSTEMTYPE AS ST 
+		FROM
+		  T_DIC_STDPOLLCODE a 
+		  LEFT JOIN T_DIC_SYSTYPE_POLLCODE_REL b 
+		    ON a.CODECLASS = b.CODECLASS 
+		WHERE POLLUTECLASS IN (
+		    'PolluteClass12'
+		  )
+	</select>
+	
+	<select id="queryTableName" resultType="com.zeei.das.aas.vo.SystemTableVO">
+		SELECT
+		SYSTEMTYPE AS ST,
+		TNAMERT AS tableNameRT,
+		TNAMEMI AS tableNameMin,
+		TNAMEHH AS tableNameHH,
+		TNAMEDD AS tableNameDD,
+		TNAMESTAT AS tableNameMY
+		FROM
+		T_DIC_POINTSYSTYPE
+	</select>
+	
+</mapper>
